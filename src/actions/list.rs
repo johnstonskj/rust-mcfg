@@ -48,7 +48,7 @@ impl Action for ListAction {
                     }
                 }
                 Some(group) => {
-                    if let Some(found) = package_repository.get(group) {
+                    if let Some(found) = package_repository.group(group) {
                         list_group(found);
                     } else {
                         println!("No group found in repository named '{}'", group);

@@ -158,6 +158,14 @@ impl PackageSetGroup {
         self.package_sets.iter()
     }
 
+    pub fn has_package_set(&self, name: &str) -> bool {
+        self.package_set(name).is_some()
+    }
+
+    pub fn package_set(&self, name: &str) -> Option<&PackageSet> {
+        self.package_sets.iter().find(|ps| ps.name == name)
+    }
+
     pub fn read(path: &PathBuf) -> Result<Self> {
         debug!("PackageSetGroup::read: reading dir {:?}", path);
         let mut group = PackageSetGroup {
@@ -229,12 +237,12 @@ impl PackageRepository {
         self.package_set_groups.iter()
     }
 
-    pub fn has_group(&self, group: &str) -> bool {
-        self.get(group).is_some()
+    pub fn has_group(&self, name: &str) -> bool {
+        self.group(name).is_some()
     }
 
-    pub fn get(&self, group: &str) -> Option<&PackageSetGroup> {
-        self.package_set_groups.iter().find(|psg| psg.name == group)
+    pub fn group(&self, name: &str) -> Option<&PackageSetGroup> {
+        self.package_set_groups.iter().find(|psg| psg.name == name)
     }
 }
 

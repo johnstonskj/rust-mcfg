@@ -120,8 +120,8 @@ impl Installer {
 
     fn package_action(
         &self,
-        package: &Package,
         action: &InstallActionKind,
+        package: &Package,
         variable_replacements: &HashMap<String, String>,
     ) -> Result<()> {
         if self.is_platform_match() && package.is_platform_match() {
@@ -208,10 +208,18 @@ impl InstallerRegistry {
         Ok(registry)
     }
 
+    pub fn installers(&self) -> impl Iterator<Item = &Installer> {
+        self.installers.values()
+    }
+
+    pub fn installer_for(&self, platform: Platform, kind: PackageKind) -> Option<&Installer> {
+        self.installers.get(&(platform, kind))
+    }
+
     pub fn update_self(&self) -> Result<()> {
         debug!("InstallerRegistry::update_self");
 
-        for installer in self.installers.values() {
+        for installer in self.installers() {
             if installer.is_platform_match() && installer.has_upgrade_self() {
                 println!("Updating installer {}", installer.name);
                 let cmd_str = installer
@@ -231,24 +239,27 @@ impl InstallerRegistry {
         &self,
         repository: &PackageRepository,
         action: &InstallActionKind,
-        group: &Option<String>,
-        package_set: &Option<String>,
+        package_set_group_name: &Option<String>,
+        package_set_name: &Option<String>,
     ) -> Result<()> {
         debug!(
             "InstallerRegistry::execute (.., {}, {:?}, {:?})",
-            &action, &group, &package_set
+            &action, &package_set_group_name, &package_set_name
         );
         let mut log_db = PackageLog::open(&self.log_file_path)?;
-        if let Some(group) = group {
-            if let Some(package_set_group) = repository.groups().find(|psg| psg.name() == group) {
+        if let Some(package_set_group_name) = package_set_group_name {
+            if let Some(package_set_group) = repository.group(package_set_group_name) {
                 self.execute_package_set_group(
                     action,
                     package_set_group,
-                    package_set,
+                    package_set_name,
                     &mut log_db,
                 )?;
             } else {
-                warn!("No package set group found named {:?}", group)
+                warn!(
+                    "No package set group found named {:?}",
+                    package_set_group_name
+                )
             }
         } else {
             trace!("executing for all package groups in repository");
@@ -256,7 +267,7 @@ impl InstallerRegistry {
                 self.execute_package_set_group(
                     action,
                     package_set_group,
-                    package_set,
+                    package_set_name,
                     &mut log_db,
                 )?;
             }
@@ -269,23 +280,20 @@ impl InstallerRegistry {
         &self,
         action: &InstallActionKind,
         package_set_group: &PackageSetGroup,
-        package_set: &Option<String>,
+        package_set_name: &Option<String>,
         log_db: &mut PackageLog,
     ) -> Result<()> {
         debug!(
             "Installer::execute_package_set_group ({}, {:?}, {:?})",
             action,
             package_set_group.name(),
-            package_set,
+            package_set_name,
         );
-        if let Some(package_set) = package_set {
-            if let Some(package_set) = package_set_group
-                .package_sets()
-                .find(|ps| ps.name() == package_set)
-            {
+        if let Some(package_set_name) = package_set_name {
+            if let Some(package_set) = package_set_group.package_set(package_set_name) {
                 self.execute_package_set(action, package_set_group, package_set, log_db)?;
             } else {
-                warn!("No package set found named {:?}", package_set)
+                warn!("No package set found named {:?}", package_set_name)
             }
         } else {
             trace!("executing for all package sets in group");
@@ -320,12 +328,12 @@ impl InstallerRegistry {
 
         trace!("executing all package actions");
         for package in package_set.packages() {
-            match self.installers.get(&(package.platform(), package.kind())) {
+            match self.installer_for(package.platform(), package.kind()) {
                 None => return Err(ErrorKind::NoInstallerForKind(package.kind()).into()),
                 Some(installer) => {
                     let _ = variable_replacements
                         .insert("package_name".to_string(), package.name().to_string());
-                    installer.package_action(package, action, &variable_replacements)?;
+                    installer.package_action(action, package, &variable_replacements)?;
                     log_db.log_installed_package(&InstalledPackage::new(
                         package_set_group.name(),
                         package_set.name(),
