@@ -9,7 +9,6 @@ More detailed description, with
 
 use crate::actions::Action;
 use crate::error::Result;
-use crate::shared::environment::Environment;
 use crate::shared::installer::InstallerRegistry;
 
 // ------------------------------------------------------------------------------------------------
@@ -17,9 +16,7 @@ use crate::shared::installer::InstallerRegistry;
 // ------------------------------------------------------------------------------------------------
 
 #[derive(Debug)]
-pub struct UpdateSelfAction {
-    env: Environment,
-}
+pub struct UpdateSelfAction {}
 
 // ------------------------------------------------------------------------------------------------
 // Private Types
@@ -35,15 +32,15 @@ pub struct UpdateSelfAction {
 
 impl Action for UpdateSelfAction {
     fn run(&self) -> Result<()> {
-        let installer_registry = InstallerRegistry::read(&self.env)?;
+        let installer_registry = InstallerRegistry::open()?;
         installer_registry.update_self()?;
         Ok(())
     }
 }
 
 impl UpdateSelfAction {
-    pub fn new(env: Environment) -> Result<Box<dyn Action>> {
-        Ok(Box::from(UpdateSelfAction { env }))
+    pub fn new() -> Result<Box<dyn Action>> {
+        Ok(Box::from(UpdateSelfAction {}))
     }
 }
 

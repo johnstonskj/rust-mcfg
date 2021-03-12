@@ -9,11 +9,10 @@ More detailed description, with
 
 use crate::actions::Action;
 use crate::error::Result;
-use crate::shared::environment::Environment;
-use std::env::var;
+use crate::shared::editor::run_editor;
+use crate::shared::PackageRepository;
 use std::fs::{create_dir_all, write};
 use std::path::PathBuf;
-use std::process::Command;
 
 // ------------------------------------------------------------------------------------------------
 // Public Types
@@ -28,7 +27,6 @@ enum ManageActionKind {
 
 #[derive(Debug)]
 pub struct ManageAction {
-    env: Environment,
     kind: ManageActionKind,
     group: String,
     package_set: String,
@@ -127,31 +125,27 @@ impl Action for ManageAction {
 
 impl ManageAction {
     pub fn add(
-        env: Environment,
         group: String,
         package_set: String,
         package_set_is_file: bool,
     ) -> Result<Box<dyn Action>> {
         Ok(Box::new(ManageAction {
-            env,
             kind: ManageActionKind::Add,
             group,
             package_set,
             package_set_is_file,
         }))
     }
-    pub fn edit(env: Environment, group: String, package_set: String) -> Result<Box<dyn Action>> {
+    pub fn edit(group: String, package_set: String) -> Result<Box<dyn Action>> {
         Ok(Box::new(ManageAction {
-            env,
             kind: ManageActionKind::Edit,
             group,
             package_set,
             package_set_is_file: true,
         }))
     }
-    pub fn remove(env: Environment, group: String, package_set: String) -> Result<Box<dyn Action>> {
+    pub fn remove(group: String, package_set: String) -> Result<Box<dyn Action>> {
         Ok(Box::new(ManageAction {
-            env,
             kind: ManageActionKind::Remove,
             group,
             package_set,
@@ -160,7 +154,7 @@ impl ManageAction {
     }
 
     fn make_package_set_path(&self, package_set_is_file: bool) -> PathBuf {
-        let group_path = self.env.repository_path().join(&self.group);
+        let group_path = PackageRepository::default_path().join(&self.group);
         if package_set_is_file {
             group_path.join(&format!("{}.yml", self.package_set))
         } else {
@@ -172,21 +166,6 @@ impl ManageAction {
 // ------------------------------------------------------------------------------------------------
 // Private Functions
 // ------------------------------------------------------------------------------------------------
-
-fn run_editor(file_path: &PathBuf) {
-    let editor = match (var("VISUAL"), var("EDITOR")) {
-        (Ok(cmd), _) => cmd,
-        (Err(_), Ok(cmd)) => cmd,
-        (_, _) => "vi".to_string(),
-    };
-    if let Ok(status) = Command::new(editor).arg(file_path).status() {
-        if !status.success() {
-            eprintln!("Editor reported error opening {:?}", file_path);
-        }
-    } else {
-        eprintln!("Could not start editor for file {:?}", file_path);
-    }
-}
 
 // ------------------------------------------------------------------------------------------------
 // Modules

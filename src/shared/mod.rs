@@ -1,10 +1,5 @@
 /*!
-One-line description.
-
-More detailed description, with
-
-# Example
-
+Common modules used by the actions defined in [`crate::actions`](../actions/index.html).
 */
 
 use serde::{Deserialize, Serialize};
@@ -24,10 +19,10 @@ pub enum Platform {
 #[derive(Deserialize, Serialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[serde(rename_all = "kebab-case")]
 pub enum PackageKind {
-    Default,
     Application,
-    Script(String),
+    Default,
     Language(String),
+    Script(String),
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -98,12 +93,21 @@ impl PackageKind {
 // Modules
 // ------------------------------------------------------------------------------------------------
 
+#[doc(hidden)]
 pub mod command;
+pub use command::Tokens;
 
-pub mod environment;
+#[doc(hidden)]
+pub mod editor;
 
+#[doc(hidden)]
 pub mod installer;
+pub use installer::{InstallActionKind, Installer, InstallerCommandKind, InstallerRegistry};
 
+#[doc(hidden)]
 pub mod install_log;
+pub use install_log::{InstalledPackage, PackageLog};
 
+#[doc(hidden)]
 pub mod packages;
+pub use packages::{Package, PackageRepository, PackageSet, PackageSetGroup};

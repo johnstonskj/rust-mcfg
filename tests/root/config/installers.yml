@@ -3,31 +3,39 @@
   platform: macos
   kind: default
   commands:
-    install: "brew install {{package}}"
-    uninstall: "brew uninstall {{package}}"
-    update-self: "brew upgrade"
-    update: "brew update {{package}}"
+    install: "brew install {{package_name}}"
+    uninstall: "brew uninstall {{package_name}}"
+    update-self: "brew update"
+    update: "brew upgrade {{package_name}}"
 
 - name: homebrew apps
   platform: macos
   kind: application
   commands:
-    install: "brew cask install {{package}}"
-    uninstall: "brew cask uninstall {{package}}"
-    update-self: "brew upgrade"
-    update: "brew cask update {{package}}"
+    install: "brew cask install {{package_name}}"
+    uninstall: "brew cask uninstall {{package_name}}"
+    update-self: "brew update"
+    update: "brew cask upgrade {{package_name}}"
 
 - name: cargo
   kind:
     language: rust
   commands:
-    install: "cargo install {{package}}"
-    uninstall: "cargo uninstall {{package}}"
+    install: "cargo install {{package_name}}"
+    uninstall: "cargo uninstall {{package_name}}"
 
 - name: conda
   kind:
     language: python
   commands:
-    install: "conda install {{package}}"
-    uninstall: "conda remove {{package}}"
-    update: "conda update {{package}}"
+    install: "conda install {{package_name}}"
+    uninstall: "conda remove {{package_name}}"
+    update: "conda update {{package_name}}"
+
+- name: gem
+  kind:
+    language: ruby
+  commands:
+    install: "gem install {{package_name}}"
+    uninstall: "gem uninstall {{package_name}}"
+    update: "gem update {{package_name}}"

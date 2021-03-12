@@ -8,8 +8,10 @@ More detailed description, with
 */
 
 use crate::error::Result;
+use crate::APP_NAME;
 use rusqlite::{params, Connection, Row};
 use std::convert::TryFrom;
+use std::env::current_dir;
 use std::path::PathBuf;
 
 // ------------------------------------------------------------------------------------------------
@@ -28,6 +30,8 @@ pub struct InstalledPackage {
     installer_name: String,
 }
 
+pub const LOG_FILE: &str = "install-log.sql";
+
 // ------------------------------------------------------------------------------------------------
 // Private Types
 // ------------------------------------------------------------------------------------------------
@@ -41,7 +45,20 @@ pub struct InstalledPackage {
 // ------------------------------------------------------------------------------------------------
 
 impl PackageLog {
-    pub fn open(log_file_path: &PathBuf) -> Result<Self> {
+    pub fn default_path() -> PathBuf {
+        xdirs::log_dir_for(APP_NAME).unwrap().join(LOG_FILE)
+    }
+
+    pub fn open() -> Result<Self> {
+        Self::actual_open(Self::default_path())
+    }
+
+    pub fn open_from(log_root: PathBuf) -> Result<Self> {
+        let base = current_dir().unwrap();
+        Self::actual_open(base.join(log_root))
+    }
+
+    fn actual_open(log_file_path: PathBuf) -> Result<Self> {
         let connection = if !log_file_path.is_file() {
             debug!(
                 "PackageLog::open creating new log file: {:?}",

@@ -1,6 +1,6 @@
 use mcfg::actions::*;
 use mcfg::error::Result;
-use mcfg::shared::environment::Environment;
+use mcfg::shared::{InstallerRegistry, PackageRepository};
 use mcfg::APP_NAME;
 use std::error::Error;
 use structopt::StructOpt;
@@ -69,8 +69,10 @@ pub enum SubCommands {
     /// Show the current configuration
     UpdateSelf,
     // --------------------------------------------------------------------------------------------
-    /// Show the current configuration
-    Config,
+    /// Show current path locations
+    Paths,
+    /// Edit the current installer registry file
+    Installers,
     /// List package-sets in the local repository
     List {
         /// If specified, only list package-sets from the named group
@@ -118,43 +120,56 @@ fn parse() -> Result<Box<dyn Action>> {
         })
         .init();
 
-    let env = Environment::default();
-
-    if !args.sub_command.is_init() && !env.is_initialized() {
-        eprintln!("Error: your local repository is not initialized, try running the 'nit' command");
+    if !args.sub_command.is_init() && !is_initialized() {
+        eprintln!(
+            "Error: your local repository is not initialized, try running the 'init' command"
+        );
         panic!("Could not continue");
     }
 
     match args.sub_command {
+        // ----------------------------------------------------------------------------------------
+        // Repository Commands
+        // ----------------------------------------------------------------------------------------
         SubCommands::Init {
             local_dir,
             repository_url,
-        } => InitAction::new(env, local_dir, repository_url),
-        SubCommands::Refresh => RefreshAction::new(env),
-        SubCommands::Install { group, package_set } => {
-            InstallAction::install(env, group, package_set)
-        }
-        SubCommands::Update { group, package_set } => {
-            InstallAction::update(env, group, package_set)
-        }
-        SubCommands::Uninstall { group, package_set } => {
-            InstallAction::uninstall(env, group, package_set)
-        }
-        SubCommands::LinkFiles { group, package_set } => {
-            InstallAction::link_files(env, group, package_set)
-        }
-        SubCommands::UpdateSelf => UpdateSelfAction::new(env),
-        SubCommands::Config => ConfigAction::new(env),
-        SubCommands::List { group } => ListAction::new(env, group),
-        SubCommands::History { limit } => HistoryAction::new(env, limit),
+        } => InitAction::new(local_dir, repository_url),
+        SubCommands::Refresh => RefreshAction::new(),
         SubCommands::Add {
             group,
             package_set,
             as_file,
-        } => ManageAction::add(env, group, package_set, as_file),
-        SubCommands::Edit { group, package_set } => ManageAction::edit(env, group, package_set),
-        SubCommands::Remove { group, package_set } => ManageAction::remove(env, group, package_set),
+        } => ManageAction::add(group, package_set, as_file),
+        SubCommands::Edit { group, package_set } => ManageAction::edit(group, package_set),
+        SubCommands::Remove { group, package_set } => ManageAction::remove(group, package_set),
+        SubCommands::List { group } => ListAction::new(group),
+        // ----------------------------------------------------------------------------------------
+        // Package Commands
+        // ----------------------------------------------------------------------------------------
+        SubCommands::Install { group, package_set } => InstallAction::install(group, package_set),
+        SubCommands::Update { group, package_set } => InstallAction::update(group, package_set),
+        SubCommands::Uninstall { group, package_set } => {
+            InstallAction::uninstall(group, package_set)
+        }
+        SubCommands::LinkFiles { group, package_set } => {
+            InstallAction::link_files(group, package_set)
+        }
+        // ----------------------------------------------------------------------------------------
+        // Installer Commands
+        // ----------------------------------------------------------------------------------------
+        SubCommands::Installers => EditInstallersAction::new(),
+        SubCommands::History { limit } => HistoryAction::new(limit),
+        SubCommands::UpdateSelf => UpdateSelfAction::new(),
+        // ----------------------------------------------------------------------------------------
+        // Help Commands
+        // ----------------------------------------------------------------------------------------
+        SubCommands::Paths => ShowPathsAction::new(),
     }
+}
+
+pub fn is_initialized() -> bool {
+    InstallerRegistry::default_path().is_file() && PackageRepository::default_path().is_dir()
 }
 
 // ------------------------------------------------------------------------------------------------

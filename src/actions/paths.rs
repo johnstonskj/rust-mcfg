@@ -9,16 +9,15 @@ More detailed description, with
 
 use crate::actions::Action;
 use crate::error::Result;
-use crate::shared::packages::{PackageRepository, PackageSet, PackageSetGroup};
+use crate::shared::installer::InstallerRegistry;
+use crate::shared::{PackageLog, PackageRepository};
 
 // ------------------------------------------------------------------------------------------------
 // Public Types
 // ------------------------------------------------------------------------------------------------
 
 #[derive(Debug)]
-pub struct ListAction {
-    group: Option<String>,
-}
+pub struct ShowPathsAction {}
 
 // ------------------------------------------------------------------------------------------------
 // Private Types
@@ -32,59 +31,37 @@ pub struct ListAction {
 // Implementations
 // ------------------------------------------------------------------------------------------------
 
-impl Action for ListAction {
+impl Action for ShowPathsAction {
     fn run(&self) -> Result<()> {
-        info!("ListAction::run {:?}", self);
-        let package_repository = PackageRepository::open()?;
-        if package_repository.is_empty() {
-            println!("No package sets found in repository");
-        } else {
-            match &self.group {
-                None => {
-                    for group in package_repository.groups() {
-                        list_group(&group);
-                    }
-                }
-                Some(group) => {
-                    if let Some(found) = package_repository.group(group) {
-                        list_group(found);
-                    } else {
-                        println!("No group found in repository named '{}'", group);
-                    }
-                }
-            }
+        let repository_location = PackageRepository::default_path();
+        println!("Package Repository path:\n\t{:?}", &repository_location);
+        let metadata = std::fs::symlink_metadata(&repository_location)?;
+        let file_type = metadata.file_type();
+        if file_type.is_symlink() {
+            let local_location = std::fs::read_link(repository_location)?;
+            println!("Package Repository symlinked to:\n\t{:?}", &local_location);
         }
+        println!(
+            "Installer Registry path:\n\t{:?}",
+            InstallerRegistry::default_path()
+        );
+        println!(
+            "Package Installer log file path:\n\t{:?}",
+            PackageLog::default_path()
+        );
         Ok(())
     }
 }
 
-impl ListAction {
-    pub fn new(group: Option<String>) -> Result<Box<dyn Action>> {
-        Ok(Box::from(ListAction { group }))
+impl ShowPathsAction {
+    pub fn new() -> Result<Box<dyn Action>> {
+        Ok(Box::from(ShowPathsAction {}))
     }
 }
 
 // ------------------------------------------------------------------------------------------------
 // Private Functions
 // ------------------------------------------------------------------------------------------------
-
-fn list_group(group: &PackageSetGroup) {
-    println!("* {}", group.name());
-    for set in group.package_sets() {
-        list_set(set);
-    }
-}
-
-fn list_set(set: &PackageSet) {
-    match set.description() {
-        None => {
-            println!("  * {}", set.name());
-        }
-        Some(description) => {
-            println!("  * {}: {}", set.name(), description);
-        }
-    }
-}
 
 // ------------------------------------------------------------------------------------------------
 // Modules

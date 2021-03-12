@@ -8,10 +8,11 @@ More detailed description, with
 */
 
 use crate::error::Result;
-use crate::shared::environment::Environment;
 use crate::shared::{PackageKind, Platform};
+use crate::APP_NAME;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::env::current_dir;
 use std::ffi::OsStr;
 use std::fs::read_dir;
 use std::path::PathBuf;
@@ -26,8 +27,8 @@ pub struct Package {
     name: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     platform: Option<Platform>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    kind: Option<PackageKind>,
+    #[serde(default, skip_serializing_if = "is_default")]
+    kind: PackageKind,
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
@@ -41,13 +42,13 @@ pub struct PackageSet {
     #[serde(default, skip_serializing_if = "is_default")]
     optional: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    env_file: Option<String>,
+    run_before: Option<String>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     packages: Vec<Package>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    env_file: Option<String>,
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     link_files: HashMap<String, String>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    run_before: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     run_after: Option<String>,
 }
@@ -64,6 +65,8 @@ pub struct PackageRepository {
     path: PathBuf,
     package_set_groups: Vec<PackageSetGroup>,
 }
+
+pub const REPOSITORY_DIR: &str = "repository";
 
 // ------------------------------------------------------------------------------------------------
 // Private Types
@@ -90,8 +93,8 @@ impl Package {
         self.platform.as_ref().cloned().unwrap_or_default()
     }
 
-    pub fn kind(&self) -> PackageKind {
-        self.kind.as_ref().cloned().unwrap_or_default()
+    pub fn kind(&self) -> &PackageKind {
+        &self.kind
     }
 }
 
@@ -199,13 +202,28 @@ impl PackageSetGroup {
 // ------------------------------------------------------------------------------------------------
 
 impl PackageRepository {
-    pub fn open(env: &Environment) -> Result<Self> {
+    pub fn default_path() -> PathBuf {
+        xdirs::config_dir_for(APP_NAME)
+            .unwrap()
+            .join(REPOSITORY_DIR)
+    }
+
+    pub fn open() -> Result<Self> {
+        Self::actual_open(Self::default_path())
+    }
+
+    pub fn open_from(repository_root: PathBuf) -> Result<Self> {
+        let base = current_dir().unwrap();
+        Self::actual_open(base.join(repository_root))
+    }
+
+    fn actual_open(repository_path: PathBuf) -> Result<Self> {
         info!(
             "PackageRepository::open: reading all package data from {:?}",
-            env.repository_path()
+            &repository_path
         );
         let mut package_set_groups: Vec<PackageSetGroup> = Default::default();
-        for dir_entry in read_dir(env.repository_path())? {
+        for dir_entry in read_dir(&repository_path)? {
             let group_path = dir_entry?.path();
             if group_path.is_dir() {
                 if group_path.to_string_lossy().to_string().ends_with("/.git") {
@@ -220,7 +238,7 @@ impl PackageRepository {
         }
         package_set_groups.sort_by_key(|psg| psg.name.clone());
         Ok(PackageRepository {
-            path: env.repository_path().clone(),
+            path: repository_path.clone(),
             package_set_groups,
         })
     }
@@ -293,7 +311,7 @@ mod tests {
             packages: vec![Package {
                 name: "lux".to_string(),
                 platform: None,
-                kind: Some(PackageKind::Language("python".to_string())),
+                kind: PackageKind::Language("python".to_string()),
             }],
             link_files: vec![("set-lux".to_string(), "{{local-bin}}/set-lux".to_string())]
                 .iter()

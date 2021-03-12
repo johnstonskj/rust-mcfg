@@ -9,7 +9,7 @@ More detailed description, with
 
 use crate::actions::Action;
 use crate::error::Result;
-use crate::shared::environment::Environment;
+use crate::shared::PackageRepository;
 use git2::{ErrorClass, ErrorCode, Repository};
 
 // ------------------------------------------------------------------------------------------------
@@ -17,9 +17,7 @@ use git2::{ErrorClass, ErrorCode, Repository};
 // ------------------------------------------------------------------------------------------------
 
 #[derive(Debug)]
-pub struct RefreshAction {
-    env: Environment,
-}
+pub struct RefreshAction {}
 
 // ------------------------------------------------------------------------------------------------
 // Private Types
@@ -37,7 +35,7 @@ impl Action for RefreshAction {
     fn run(&self) -> Result<()> {
         info!("RefreshAction::run refreshing local git");
         // TODO: check if it exists!
-        match Repository::open(self.env.repository_path()) {
+        match Repository::open(PackageRepository::default_path()) {
             Err(e) => {
                 if e.code() == ErrorCode::NotFound && e.class() == ErrorClass::Repository {
                     debug!("Local dir does not contain a Git repo, ignoring refresh");
@@ -78,8 +76,8 @@ impl Action for RefreshAction {
 }
 
 impl RefreshAction {
-    pub fn new(env: Environment) -> Result<Box<dyn Action>> {
-        Ok(Box::from(RefreshAction { env }))
+    pub fn new() -> Result<Box<dyn Action>> {
+        Ok(Box::from(RefreshAction {}))
     }
 }
 

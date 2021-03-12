@@ -9,12 +9,13 @@ More detailed description, with
 
 use crate::error::{ErrorKind, Result};
 use crate::shared::command::Tokens;
-use crate::shared::environment::Environment;
 use crate::shared::install_log::{InstalledPackage, PackageLog};
 use crate::shared::packages::{Package, PackageRepository, PackageSet, PackageSetGroup};
 use crate::shared::{PackageKind, Platform};
+use crate::APP_NAME;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::env::current_dir;
 use std::fmt::{Display, Formatter};
 use std::fs::read_to_string;
 use std::path::PathBuf;
@@ -53,10 +54,10 @@ pub struct Installer {
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct InstallerRegistry {
-    config_path: PathBuf,
-    log_file_path: PathBuf,
     installers: HashMap<(Platform, PackageKind), Installer>,
 }
+
+pub const REGISTRY_FILE: &str = "installers.yml";
 
 // ------------------------------------------------------------------------------------------------
 // Private Types
@@ -125,7 +126,7 @@ impl Installer {
         variable_replacements: &HashMap<String, String>,
     ) -> Result<()> {
         if self.is_platform_match() && package.is_platform_match() {
-            if self.kind() == package.kind() {
+            if self.kind() == *package.kind() {
                 let cmd = match action {
                     InstallActionKind::Install => self.commands.get(&InstallerCommandKind::Install),
                     InstallActionKind::Update => self.commands.get(&InstallerCommandKind::Update),
@@ -173,16 +174,24 @@ impl Into<Vec<Installer>> for InstallerRegistry {
 }
 
 impl InstallerRegistry {
-    pub fn read(env: &Environment) -> Result<Self> {
-        info!(
-            "InstallerRegistry::read loading from {:?}",
-            env.installer_file_path()
-        );
-        let config_file = read_to_string(env.installer_file_path())?;
-        let installers: Vec<Installer> = serde_yaml::from_str(&config_file)?;
+    pub fn default_path() -> PathBuf {
+        xdirs::config_dir_for(APP_NAME).unwrap().join(REGISTRY_FILE)
+    }
+
+    pub fn open() -> Result<Self> {
+        Self::actual_open(Self::default_path())
+    }
+
+    pub fn open_from(config_root: PathBuf) -> Result<Self> {
+        let base = current_dir().unwrap();
+        Self::actual_open(base.join(config_root))
+    }
+
+    fn actual_open(registry_file: PathBuf) -> Result<Self> {
+        info!("InstallerRegistry::read loading from {:?}", registry_file);
+        let registry_data = read_to_string(registry_file)?;
+        let installers: Vec<Installer> = serde_yaml::from_str(&registry_data)?;
         let mut registry = Self {
-            config_path: env.config_path().clone(),
-            log_file_path: env.log_file_path().clone(),
             installers: Default::default(),
         };
         for installer in installers {
@@ -246,7 +255,7 @@ impl InstallerRegistry {
             "InstallerRegistry::execute (.., {}, {:?}, {:?})",
             &action, &package_set_group_name, &package_set_name
         );
-        let mut log_db = PackageLog::open(&self.log_file_path)?;
+        let mut log_db = PackageLog::open()?;
         if let Some(package_set_group_name) = package_set_group_name {
             if let Some(package_set_group) = repository.group(package_set_group_name) {
                 self.execute_package_set_group(
@@ -328,8 +337,8 @@ impl InstallerRegistry {
 
         trace!("executing all package actions");
         for package in package_set.packages() {
-            match self.installer_for(package.platform(), package.kind()) {
-                None => return Err(ErrorKind::NoInstallerForKind(package.kind()).into()),
+            match self.installer_for(package.platform(), package.kind().clone()) {
+                None => return Err(ErrorKind::NoInstallerForKind(package.kind().clone()).into()),
                 Some(installer) => {
                     let _ = variable_replacements
                         .insert("package_name".to_string(), package.name().to_string());
@@ -346,8 +355,10 @@ impl InstallerRegistry {
 
         trace!("executing all env-file actions");
         if let Some(original) = package_set.env_file() {
-            let link = self
-                .config_path
+            let link = package_set
+                .path()
+                .parent()
+                .unwrap()
                 .join(package_set.name())
                 .join(original.file_name().unwrap());
             match action {

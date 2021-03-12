@@ -9,24 +9,15 @@ More detailed description, with
 
 use crate::actions::Action;
 use crate::error::Result;
-use crate::shared::environment::Environment;
-use crate::shared::installer::{Installer, InstallerRegistry};
-use serde::{Deserialize, Serialize};
+use crate::shared::editor::run_editor;
+use crate::shared::installer::InstallerRegistry;
 
 // ------------------------------------------------------------------------------------------------
 // Public Types
 // ------------------------------------------------------------------------------------------------
 
 #[derive(Debug)]
-pub struct ConfigAction {
-    env: Environment,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct CombinedConfig {
-    root_paths: Environment,
-    installers: Vec<Installer>,
-}
+pub struct EditInstallersAction {}
 
 // ------------------------------------------------------------------------------------------------
 // Private Types
@@ -40,21 +31,18 @@ struct CombinedConfig {
 // Implementations
 // ------------------------------------------------------------------------------------------------
 
-impl Action for ConfigAction {
+impl Action for EditInstallersAction {
     fn run(&self) -> Result<()> {
-        let registry = InstallerRegistry::read(&self.env)?;
-        let combined = CombinedConfig {
-            root_paths: self.env.clone(),
-            installers: registry.into(),
-        };
-        serde_yaml::to_writer(std::io::stdout(), &combined)?;
+        let registry_path = InstallerRegistry::default_path();
+        debug!("EditInstallersAction::run editing file {:?}", registry_path);
+        run_editor(&registry_path);
         Ok(())
     }
 }
 
-impl ConfigAction {
-    pub fn new(env: Environment) -> Result<Box<dyn Action>> {
-        Ok(Box::from(ConfigAction { env }))
+impl EditInstallersAction {
+    pub fn new() -> Result<Box<dyn Action>> {
+        Ok(Box::from(EditInstallersAction {}))
     }
 }
 

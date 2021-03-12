@@ -9,7 +9,6 @@ More detailed description, with
 
 use crate::actions::Action;
 use crate::error::Result;
-use crate::shared::environment::Environment;
 use crate::shared::install_log::PackageLog;
 use prettytable::Table;
 
@@ -19,7 +18,6 @@ use prettytable::Table;
 
 #[derive(Debug)]
 pub struct HistoryAction {
-    env: Environment,
     limit: u32,
 }
 
@@ -39,7 +37,7 @@ impl Action for HistoryAction {
     fn run(&self) -> Result<()> {
         info!("HistoryAction::run {:?}", self);
 
-        let mut log_db = PackageLog::open(&self.env.log_file_path())?;
+        let mut log_db = PackageLog::open()?;
         let history = log_db.installed_package_history(self.limit)?;
 
         let mut table = Table::new();
@@ -62,9 +60,8 @@ impl Action for HistoryAction {
 }
 
 impl HistoryAction {
-    pub fn new(env: Environment, limit: Option<u32>) -> Result<Box<dyn Action>> {
+    pub fn new(limit: Option<u32>) -> Result<Box<dyn Action>> {
         Ok(Box::from(HistoryAction {
-            env,
             limit: limit.unwrap_or_default(),
         }))
     }

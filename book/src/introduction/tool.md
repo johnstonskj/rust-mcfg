@@ -16,15 +16,16 @@ FLAGS:
 
 SUBCOMMANDS:
     add            Add a new package-set to the local repository
-    config         Show the current configuration
     edit           Add an existing package-set in the local repository
     help           Prints this message or the help of the given subcommand(s)
     history        Show a history of install actions on the local machine
     init           Initialize a repository to manage package-set installs
     install        Install package-sets as described in the local repository
+    installers     Edit the current installer registry file
     link-files     Link any files specified in package-sets as described in the 
                    local repository
     list           List package-sets in the local repository
+    paths          Show current path locations
     refresh        Refresh the current repository
     remove         Remove an existing package-set from the local repository
     uninstall      Uninstall package-sets as described in the local repository
@@ -51,9 +52,11 @@ All take -p and -g
 
 ## Installer Commands
 
+* **history** show the history of package installations.
 * **update-self** update any installer in the registry with an `update-self` script property.
 
 ## Information Commands
 
-* **config** show the current configuration details, including paths and installers.
+* **installers** edit the current installer registry.
 * **help** show the help text above.
+* **paths** show the location for key components of the tool, the installer registry, package repository, and log file.

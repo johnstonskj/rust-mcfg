@@ -1,10 +1,5 @@
 /*!
-One-line description.
-
-More detailed description, with
-
-# Example
-
+The common `ErrorKind`, `Error`, and `Result` types used throughout.
 */
 
 #![allow(missing_docs)]
