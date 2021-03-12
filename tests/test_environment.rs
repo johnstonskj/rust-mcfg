@@ -1,6 +1,7 @@
 use mcfg::shared::installer::InstallerRegistry;
 use mcfg::shared::packages::PackageRepository;
 use std::path::PathBuf;
+use pretty_assertions{assert_eq};
 
 #[test]
 fn test_environment_installer_file() {

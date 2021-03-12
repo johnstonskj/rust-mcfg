@@ -10,9 +10,9 @@ More detailed description, with
 use crate::error::{ErrorKind, Result};
 use log::LevelFilter;
 use regex::Regex;
-use serde::export::Formatter;
 use std::collections::HashMap;
 use std::fmt::Display;
+use std::fmt::Formatter;
 use std::process::Command;
 use std::str::FromStr;
 
