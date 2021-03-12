@@ -1,0 +1,400 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>The mcfg Book</title>
+        
+        <meta name="robots" content="noindex" />
+        
+
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="mcfg: Machine Configurator, a cross-platform meta-package manager.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
+        <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500" rel="stylesheet" type="text/css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        
+        <link rel="stylesheet" href="src/additional.css">
+        
+
+        
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "light" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction/index.html"><strong aria-hidden="true">1.</strong> Introduction</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="introduction/start-here.html"><strong aria-hidden="true">1.1.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="introduction/tool.html"><strong aria-hidden="true">1.2.</strong> The Tool</a></li><li class="chapter-item expanded "><a href="introduction/library.html"><strong aria-hidden="true">1.3.</strong> The Library</a></li></ol></li><li class="chapter-item expanded "><a href="repository/index.html"><strong aria-hidden="true">2.</strong> Packages, Sets, and Groups</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="repository/packages.html"><strong aria-hidden="true">2.1.</strong> Packages</a></li><li class="chapter-item expanded "><a href="repository/package-sets.html"><strong aria-hidden="true">2.2.</strong> Packages Sets</a></li><li class="chapter-item expanded "><a href="repository/package-set-groups.html"><strong aria-hidden="true">2.3.</strong> Package Set Groups</a></li></ol></li><li class="chapter-item expanded "><a href="installers/index.html"><strong aria-hidden="true">3.</strong> Installers</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="installers/scripts.html"><strong aria-hidden="true">3.1.</strong> Script Environments</a></li></ol></li><li class="chapter-item expanded "><a href="tool/index.html"><strong aria-hidden="true">4.</strong> The mcfg Tool</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="tool/existing.html"><strong aria-hidden="true">4.1.</strong> Using Existing Actions</a></li><li class="chapter-item expanded "><a href="tool/new.html"><strong aria-hidden="true">4.2.</strong> Adding New Actions</a></li></ol></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                        
+                    </div>
+
+                    <h1 class="menu-title">The mcfg Book</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        
+                        <a href="https://github.com/johnstonskj/rust-mcfg" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        
+                    </div>
+                </div>
+
+                
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" name="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1><a class="header" href="#introduction" id="introduction">Introduction</a></h1>
+<p>The <code>mcfg</code> crate and command-line tool, implements a simple <em>Machine Configurator</em> or meta-package manager to keep 
+desktop environments the same across machines and wherever possible across operating systems. The tool makes use of 
+existing package managers such as <a href="https://brew.sh/">homebrew</a>, <a href="https://en.wikipedia.org/wiki/APT_(software)">apt</a>, 
+or <a href="https://en.wikipedia.org/wiki/Yum_(software)">yum</a>. It allows for packages to be grouped into package sets which
+are the units of management and then package sets into groups for simple organization.</p>
+<p>The description of package sets are in YAML files and </p>
+<h1><a class="header" href="#getting-started" id="getting-started">Getting Started</a></h1>
+<h2><a class="header" href="#paths" id="paths">Paths</a></h2>
+<p><code>config_path</code> - the path to the user's operating-system specific configuration directory for this
+app.
+<code>installer_file_path</code> the path to the installer registry file; by default this is
+<code>{{config_path}}/installers.yml</code>.
+<code>repository_path</code> - the path to the user's package-set repository; by default this is in the user's
+operating-system specific <em>local data</em> directory, but is often a symbolic link to the repository
+elsewhere.
+<code>log_file_path</code> - the path to the log file which is a SQLite3 database, it is held in the user's
+operating-system specific log directory.</p>
+<h1><a class="header" href="#the-tool" id="the-tool">The Tool</a></h1>
+<h1><a class="header" href="#the-library" id="the-library">The Library</a></h1>
+<h1><a class="header" href="#packages-sets-and-groups" id="packages-sets-and-groups">Packages, Sets, and Groups</a></h1>
+<ol>
+<li>A set of package-set groups, these are basically all the directories under the repository
+directory. Certain directories, such as <code>.git</code>, will be ignored.</li>
+<li>A set of package-sets, these are within the group directories and are of one of two forms:
+<ol>
+<li>a directory containing a file with the name <code>package-set.yml</code>, or</li>
+<li>a file in the group directory with the <code>.yml</code> extension.</li>
+</ol>
+</li>
+</ol>
+<h2><a class="header" href="#example-packagerepository-api" id="example-packagerepository-api">Example PackageRepository API</a></h2>
+<pre><pre class="playpen"><code class="language-rust no_run">
+<span class="boring">#![allow(unused_variables)]
+</span><span class="boring">fn main() {
+</span>use mcfg::shared::PackageRepository;
+
+let package_repository = PackageRepository::open().unwrap();
+<span class="boring">}
+</span></code></pre></pre>
+<h1><a class="header" href="#packages" id="packages">Packages</a></h1>
+<p>Packages are described within a <a href="repository/./package-sets.html">package set</a>, they have the following p properties:</p>
+<ul>
+<li>A name.</li>
+<li>An optional platform specification.</li>
+<li>An optional package kind specification.</li>
+</ul>
+<h2><a class="header" href="#platforms" id="platforms">Platforms</a></h2>
+<p>The platform value, typed as <code>Option&lt;mcfg::shared::Platform&gt;</code>, specifies whether a package is only applicable for one 
+of the supported operating system and where <code>None</code> implies no restriction, it should be installed for all.</p>
+<h2><a class="header" href="#package-kinds" id="package-kinds">Package Kinds</a></h2>
+<p>The package kind value, typed as <code>mcfg::shared::PackageKind</code>, specifies the kind of installer to use for this
+package.</p>
+<ul>
+<li>application</li>
+<li>default</li>
+<li>language</li>
+<li>script</li>
+</ul>
+<h1><a class="header" href="#packages-sets" id="packages-sets">Packages Sets</a></h1>
+<p>A package set is described in a YAML file, usually named <code>package-set.yml</code> and which contains the following properties.</p>
+<ul>
+<li>A name, and optional description.</li>
+<li>A flag denoting whether the package set is optional. </li>
+<li>An optional script line to run before any other action.</li>
+<li>A list of <a href="repository/./packages.html">packages</a> to be installed by their respective installers.</li>
+<li>An optional name for an <em>env file</em> to link into the user's configuration space.</li>
+<li>An optional map of files to be symbolically linked into the user's file system.</li>
+<li>An optional script line to run after all other actions.</li>
+</ul>
+<h2><a class="header" href="#example-package-set-file" id="example-package-set-file">Example Package Set File</a></h2>
+<pre><code class="language-yaml">name: lux
+env-file: sample.env
+packages:
+  - name: lux
+    kind:
+      language: python
+link-files:
+  set-lux: &quot;{{local-bin}}/set-lux&quot;
+</code></pre>
+<h2><a class="header" href="#scripts" id="scripts">Scripts</a></h2>
+<h2><a class="header" href="#env-files" id="env-files">Env Files</a></h2>
+<h2><a class="header" href="#link-files" id="link-files">Link Files</a></h2>
+<h1><a class="header" href="#package-set-groups" id="package-set-groups">Package Set Groups</a></h1>
+<h1><a class="header" href="#installers" id="installers">Installers</a></h1>
+<h1><a class="header" href="#example-installer-registry-file" id="example-installer-registry-file">Example Installer Registry File</a></h1>
+<pre><code class="language-yaml">- name: homebrew
+  platform: macos
+  kind: default
+  commands:
+    install: &quot;brew install {{package}}&quot;
+    uninstall: &quot;brew uninstall {{package}}&quot;
+    update-self: &quot;brew upgrade&quot;
+    update: &quot;brew update {{package}}&quot;
+
+- name: homebrew apps
+  platform: macos
+  kind: application
+  commands:
+    install: &quot;brew cask install {{package}}&quot;
+    uninstall: &quot;brew cask uninstall {{package}}&quot;
+    update-self: &quot;brew upgrade&quot;
+    update: &quot;brew cask update {{package}}&quot;
+
+- name: cargo
+  kind:
+    language: rust
+  commands:
+    install: &quot;cargo install {{package}}&quot;
+    uninstall: &quot;cargo uninstall {{package}}&quot;
+</code></pre>
+<h1><a class="header" href="#example-installerregistry-api" id="example-installerregistry-api">Example InstallerRegistry API</a></h1>
+<pre><pre class="playpen"><code class="language-rust no_run">
+<span class="boring">#![allow(unused_variables)]
+</span><span class="boring">fn main() {
+</span>use mcfg::shared::InstallerRegistry;
+
+let installer_registry = InstallerRegistry::open().unwrap();
+<span class="boring">}
+</span></code></pre></pre>
+<h1><a class="header" href="#script-environments" id="script-environments">Script Environments</a></h1>
+<h2><a class="header" href="#script-syntax" id="script-syntax">Script Syntax</a></h2>
+<h2><a class="header" href="#script-variables" id="script-variables">Script Variables</a></h2>
+<table><thead><tr><th>registry variable</th><th>environment variable</th><th>usage</th><th>example</th></tr></thead><tbody>
+<tr><td><code>command_action</code></td><td><code>MCFG_COMMAND_ACTION</code></td><td>The current tool action</td><td>&quot;install&quot;</td></tr>
+<tr><td><code>command_log_level</code></td><td><code>MCFG_COMMAND_LOG_LEVEL</code></td><td>The current tool max log level</td><td>&quot;info&quot;</td></tr>
+<tr><td><code>local_download_path</code></td><td><code>MCFG_LOCAL_DOWNLOAD_PATH</code></td><td>The user's local download directory</td><td>&quot;/home/alice/Downloads&quot;</td></tr>
+<tr><td><code>local_bin_path</code></td><td><code>MCFG_LOCAL_BIN_PATH</code></td><td>The user's local executable directory</td><td>&quot;/home/alice/.local/bin&quot;</td></tr>
+<tr><td><code>opsys</code></td><td><code>MCFG_OPSYS</code></td><td>The current operating system</td><td>&quot;macos&quot;</td></tr>
+<tr><td><code>shell</code></td><td><code>MCFG_SHELL</code></td><td>The default system shell</td><td>&quot;bash&quot;</td></tr>
+<tr><td><code>package_set_name</code></td><td><code>MCFG_PACKAGE_SET_NAME</code></td><td>The name of the package-set being operated on</td><td>&quot;lux&quot;</td></tr>
+<tr><td><code>package_set_file</code></td><td><code>MCFG_PACKAGE_SET_FILE</code></td><td>The file name of the package-set description</td><td>&quot;package-set.yml&quot;</td></tr>
+<tr><td><code>package_set_path</code></td><td><code>MCFG_PACKAGE_SET_PATH</code></td><td>The path to the package-set enclsing directory</td><td>&quot;/home/alice/.config/mcfg/repository/work-tools/productivity&quot;</td></tr>
+</tbody></table>
+<h1><a class="header" href="#the-mcfg-tool" id="the-mcfg-tool">The mcfg Tool</a></h1>
+<h1><a class="header" href="#using-existing-actions" id="using-existing-actions">Using Existing Actions</a></h1>
+<h2><a class="header" href="#example-calling-installaction" id="example-calling-installaction">Example Calling InstallAction</a></h2>
+<pre><pre class="playpen"><code class="language-rust">
+<span class="boring">#![allow(unused_variables)]
+</span><span class="boring">fn main() {
+</span>use mcfg::actions::InstallAction;
+use mcfg::shared::Environment;
+
+<span class="boring">fn wrapper() {
+</span>let env = Environment::default();
+
+let action = InstallAction::install(
+    env,
+    Some(&quot;work-tools&quot;.to_string()),
+    Some(&quot;productivity&quot;.to_string())).unwrap();
+
+action.run().unwrap();
+<span class="boring">}
+</span><span class="boring">}
+</span></code></pre></pre>
+<h1><a class="header" href="#adding-new-actions" id="adding-new-actions">Adding New Actions</a></h1>
+<p>The following is an example <code>Action</code> implementation that does very little.</p>
+<pre><pre class="playpen"><code class="language-rust">
+<span class="boring">#![allow(unused_variables)]
+</span><span class="boring">fn main() {
+</span>use mcfg::actions::Action;
+use mcfg::error::Result;
+use mcfg::shared::Environment;
+
+#[derive(Debug)]
+pub struct ExampleAction {
+    env: Environment,
+}
+
+impl Action for ExampleAction {
+    fn run(&amp;self) -&gt; Result&lt;()&gt; {
+        println!(&quot;ListAction::run {:?}&quot;, self);
+        Ok(())
+    }
+}
+impl ExampleAction {
+    pub fn new(env: Environment) -&gt; Result&lt;Box&lt;dyn Action&gt;&gt; {
+        Ok(Box::from(ExampleAction { env }))
+    }
+}
+<span class="boring">}
+</span></code></pre></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                        
+
+                        
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                
+
+                
+            </nav>
+
+        </div>
+
+        
+
+        
+
+        
+        
+        
+        <script type="text/javascript">
+            window.playpen_copyable = true;
+        </script>
+        
+
+        
+
+        
+        <script src="elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="searcher.js" type="text/javascript" charset="utf-8"></script>
+        
+
+        <script src="clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+        
+
+        
+        
+        <script type="text/javascript">
+        window.addEventListener('load', function() {
+            window.setTimeout(window.print, 100);
+        });
+        </script>
+        
+        
+
+    </body>
+</html>
