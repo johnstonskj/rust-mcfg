@@ -3,7 +3,7 @@ name: mdbook to pages
 on:
   push:
     branches:
-      - master
+      - main
 
 defaults:
   run:
