@@ -1,6 +1,10 @@
 # Getting Started
 
-## Paths
+## Install
+
+## Initialize Repository
+
+### Paths
 
 `config_path` - the path to the user's operating-system specific configuration directory for this
 app.
@@ -11,3 +15,7 @@ operating-system specific *local data* directory, but is often a symbolic link t
 elsewhere.
 `log_file_path` - the path to the log file which is a SQLite3 database, it is held in the user's
 operating-system specific log directory.
+
+## Add Package Sets
+
+### Install Order and Naming
