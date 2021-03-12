@@ -9,6 +9,7 @@ Machine configurator, a cross-platform meta-package manager.
 [![travis.ci](https://travis-ci.org/johnstonskj/rust-mcfg.svg?branch=master)](https://travis-ci.org/johnstonskj/rust-mcfg)
 [![GitHub stars](https://img.shields.io/github/stars/johnstonskj/rust-mcfg.svg)](https://github.com/johnstonskj/rust-mcfg/stargazers)
 
+More information is found in the [User Guide](https://simonkjohnston.life/rust-mcfg/).
 
 ## Changes
 

@@ -16,6 +16,7 @@ edition = "2018"
 [output.html]
 git-repository-url = "https://github.com/johnstonskj/rust-mcfg"
 additional-css = ["src/additional.css"]
+site-url = "https://simonkjohnston.life/rust-mcfg/"
 
 [output.html.fold] 
 enable = true
