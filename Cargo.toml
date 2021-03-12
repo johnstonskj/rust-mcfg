@@ -1,8 +1,13 @@
 [package]
 name = "mcfg"
+description = "Machine configurator, a cross-platform meta-package manager."
 version = "0.1.0"
 authors = ["Simon Johnston <johnstonskj@gmail.com>"]
 edition = "2018"
+documentation = "https://docs.rs/mcfg/"
+repository = "https://github.com/johnstonskj/rust-mcfg.git"
+license = "MIT"
+readme = "README.md"
 publish = true
 default-run = "mcfg"
 
