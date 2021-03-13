@@ -85,7 +85,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction/index.html"><strong aria-hidden="true">1.</strong> Introduction</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="introduction/start-here.html"><strong aria-hidden="true">1.1.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="introduction/tool.html"><strong aria-hidden="true">1.2.</strong> The Tool</a></li><li class="chapter-item expanded "><a href="introduction/library.html"><strong aria-hidden="true">1.3.</strong> The Library</a></li></ol></li><li class="chapter-item expanded "><a href="repository/index.html"><strong aria-hidden="true">2.</strong> Packages, Sets, and Groups</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="repository/packages.html"><strong aria-hidden="true">2.1.</strong> Packages</a></li><li class="chapter-item expanded "><a href="repository/package-sets.html"><strong aria-hidden="true">2.2.</strong> Packages Sets</a></li><li class="chapter-item expanded "><a href="repository/package-set-groups.html"><strong aria-hidden="true">2.3.</strong> Package Set Groups</a></li></ol></li><li class="chapter-item expanded "><a href="installers/index.html"><strong aria-hidden="true">3.</strong> Installers</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="installers/scripts.html"><strong aria-hidden="true">3.1.</strong> Script Environments</a></li></ol></li><li class="chapter-item expanded "><a href="tool/index.html"><strong aria-hidden="true">4.</strong> The mcfg Tool</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="tool/existing.html"><strong aria-hidden="true">4.1.</strong> Using Existing Actions</a></li><li class="chapter-item expanded "><a href="tool/new.html"><strong aria-hidden="true">4.2.</strong> Adding New Actions</a></li></ol></li><li class="chapter-item expanded "><a href="package-sets/index.html"><strong aria-hidden="true">5.</strong> Appendix: Package Sets</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction/index.html"><strong aria-hidden="true">1.</strong> Introduction</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="introduction/start-here.html"><strong aria-hidden="true">1.1.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="introduction/tool.html"><strong aria-hidden="true">1.2.</strong> The Tool</a></li><li class="chapter-item expanded "><a href="introduction/library.html"><strong aria-hidden="true">1.3.</strong> The Library</a></li></ol></li><li class="chapter-item expanded "><a href="repository/index.html"><strong aria-hidden="true">2.</strong> The Package Set Repository</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="repository/packages.html"><strong aria-hidden="true">2.1.</strong> Packages</a></li><li class="chapter-item expanded "><a href="repository/package-sets.html"><strong aria-hidden="true">2.2.</strong> Packages Sets</a></li><li class="chapter-item expanded "><a href="repository/package-set-groups.html"><strong aria-hidden="true">2.3.</strong> Package Set Groups</a></li></ol></li><li class="chapter-item expanded "><a href="installers/index.html"><strong aria-hidden="true">3.</strong> The Installer Registry</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="installers/scripts.html"><strong aria-hidden="true">3.1.</strong> Scripts</a></li></ol></li><li class="chapter-item expanded "><a href="tool/index.html"><strong aria-hidden="true">4.</strong> The mcfg Tool</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="tool/existing.html"><strong aria-hidden="true">4.1.</strong> Using Existing Actions</a></li><li class="chapter-item expanded "><a href="tool/new.html"><strong aria-hidden="true">4.2.</strong> Adding New Actions</a></li></ol></li><li class="chapter-item expanded "><a href="package-sets/index.html"><strong aria-hidden="true">5.</strong> Appendix: Package Sets</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -161,7 +161,15 @@ desktop environments the same across machines and wherever possible across opera
 existing package managers such as <a href="https://brew.sh/">homebrew</a>, <a href="https://en.wikipedia.org/wiki/APT_(software)">apt</a>, 
 or <a href="https://en.wikipedia.org/wiki/Yum_(software)">yum</a>. It allows for packages to be grouped into package sets which
 are the units of management and then package sets into groups for simple organization.</p>
-<p>The description of package sets are in YAML files and </p>
+<p>The intent is to provide a light-weigh way to describe the installation of a lot of related packages, scripts, and 
+customizations that comprise a machine environment. Specifically this was developed for keeping developer desktops 
+as close as possible between different laptop or desktop machines and between Linux and macOS systems.</p>
+<p>The tool keeps all of it's package sets organized in a repository which just happens to be a Git repo and so can 
+be versioned and easily shared between machines. It allows for the specification of different installer tools that
+will be used to do actual package management, so the user doesn't need to remember specific command-lines or other
+details. This repo can also include any additional scripts or tools the user needs, and the execution of the package
+set includes a set of environment variables to allow scripts to run without knowing any O/S or machine specific 
+paths or other details.</p>
 <h1><a class="header" href="#getting-started" id="getting-started">Getting Started</a></h1>
 <h2><a class="header" href="#install" id="install">Install</a></h2>
 <h2><a class="header" href="#initialize-repository" id="initialize-repository">Initialize Repository</a></h2>
@@ -169,6 +177,12 @@ are the units of management and then package sets into groups for simple organiz
 <pre><code class="language-text">$ mcfg paths
 Package Repository path:
 	&quot;/Users/simonjo/Library/Application Support/mcfg/repository&quot;
+Package Repository symlinked to:
+	&quot;/Users/simonjo/dotfiles-2&quot;
+Package Repository config file path:
+	&quot;/Users/simonjo/Library/Application Support/mcfg/repository/.config&quot;
+Package Repository local file path:
+	&quot;/Users/simonjo/Library/Application Support/mcfg/repository/.local&quot;
 Installer Registry path:
 	&quot;/Users/simonjo/Library/Application Support/mcfg/installers.yml&quot;
 Package Installer log file path:
@@ -184,7 +198,6 @@ elsewhere.
 <code>log_file_path</code> - the path to the log file which is a SQLite3 database, it is held in the user's
 operating-system specific log directory.</p>
 <h2><a class="header" href="#add-package-sets" id="add-package-sets">Add Package Sets</a></h2>
-<h3><a class="header" href="#install-order-and-naming" id="install-order-and-naming">Install Order and Naming</a></h3>
 <h1><a class="header" href="#the-tool" id="the-tool">The Tool</a></h1>
 <pre><code class="language-text">$ mcfg help
 mcfg 0.1.0
@@ -217,13 +230,22 @@ SUBCOMMANDS:
     update-self    Show the current configuration
 </code></pre>
 <h2><a class="header" href="#package-repository-commands" id="package-repository-commands">Package Repository Commands</a></h2>
-<ul>
-<li><strong>add</strong> add a new package set to your repository. Requires a group name and package set name.</li>
-<li><strong>edit</strong> edit an existing package set in your repository. Requires a group name and package set name.</li>
-<li><strong>list</strong> list the groups and package sets in your repository. If given a group name it only lists packages in that group.</li>
-<li><strong>refresh</strong> refresh the repository by performing a Git pull.</li>
-<li><strong>remove</strong> remove an existing package set from your repository. Requires a group name and package set name.</li>
-</ul>
+<h3><a class="header" href="#init" id="init">Init</a></h3>
+<pre><code class="language-text">$ mcfg init -l ~/dotfiles-2
+1. Creating local directory for repository
+2. Initializing Git repository
+3. Creating repository link &quot;/Users/simonjo/dotfiles-2&quot; -&gt; &quot;/Users/simonjo/Library/Application Support/mcfg/repository&quot;
+4. Creating repository config/local directories
+5. Creating 'example/hello world' package set
+6. Creating initial installer registry file
+Done.
+</code></pre>
+<h3><a class="header" href="#add-edit-remove" id="add-edit-remove">Add, Edit, Remove</a></h3>
+<p>TBD</p>
+<h3><a class="header" href="#list" id="list">List</a></h3>
+<p>TBD</p>
+<h3><a class="header" href="#refresh" id="refresh">Refresh</a></h3>
+<p>TBD</p>
 <h2><a class="header" href="#package-commands" id="package-commands">Package Commands</a></h2>
 <p>All take -p and -g</p>
 <ul>
@@ -233,28 +255,76 @@ SUBCOMMANDS:
 <li><strong>update</strong> update package sets.</li>
 </ul>
 <h2><a class="header" href="#installer-commands" id="installer-commands">Installer Commands</a></h2>
-<ul>
-<li><strong>history</strong> show the history of package installations.</li>
-<li><strong>update-self</strong> update any installer in the registry with an <code>update-self</code> script property.</li>
-</ul>
+<h3><a class="header" href="#history" id="history">History</a></h3>
+<pre><code class="language-text">+-------------------------------+--------+---------+---------+-----------+
+| Date                          | Group  | Set     | Package | Installer |
++===============================+========+=========+=========+===========+
+| 2021-03-11 20:28:04.339072 +0 | system | gnu-sed | gnu-sed | homebrew  |
++-------------------------------+--------+---------+---------+-----------+
+</code></pre>
+<h3><a class="header" href="#update-self" id="update-self">Update Self</a></h3>
+<p>TBD</p>
 <h2><a class="header" href="#information-commands" id="information-commands">Information Commands</a></h2>
 <ul>
 <li><strong>installers</strong> edit the current installer registry.</li>
-<li><strong>help</strong> show the help text above.</li>
-<li><strong>paths</strong> show the location for key components of the tool, the installer registry, package repository, and log file.</li>
 </ul>
+<h3><a class="header" href="#paths-1" id="paths-1">Paths</a></h3>
+<pre><code class="language-text">$ mcfg paths
+Package Repository path:
+	&quot;/Users/simon/Library/Application Support/mcfg/repository&quot;
+Package Repository config file path:
+	&quot;/Users/simon/Library/Application Support/mcfg/repository/.config&quot;
+Package Repository local file path:
+	&quot;/Users/simon/Library/Application Support/mcfg/repository/.local&quot;
+Installer Registry path:
+	&quot;/Users/simon/Library/Application Support/mcfg/installers.yml&quot;
+Package Installer log file path:
+	&quot;/Users/simon/Library/Logs/mcfg/install-log.sql&quot;
+</code></pre>
 <h1><a class="header" href="#the-library" id="the-library">The Library</a></h1>
-<h1><a class="header" href="#packages-sets-and-groups" id="packages-sets-and-groups">Packages, Sets, and Groups</a></h1>
-<ol>
-<li>A set of package-set groups, these are basically all the directories under the repository
-directory. Certain directories, such as <code>.git</code>, will be ignored.</li>
-<li>A set of package-sets, these are within the group directories and are of one of two forms:
-<ol>
-<li>a directory containing a file with the name <code>package-set.yml</code>, or</li>
-<li>a file in the group directory with the <code>.yml</code> extension.</li>
-</ol>
-</li>
-</ol>
+<h1><a class="header" href="#the-package-set-repository" id="the-package-set-repository">The Package Set Repository</a></h1>
+<pre><code class="language-text">$HOME/
+├─ .config/
+│  └─ mcfg/
+│     └─ installers.yml
+└─ .local/
+   └─ share/
+      └─ mcfg/
+         ├─ logs/
+         │  └─ install-log.sql
+         └─ repository/
+            ├─ .config/
+            ├─ .git/  
+            └─ .local/
+</code></pre>
+<pre><code class="language-text">$HOME/
+├─ .config/
+│  └─ mcfg/
+│     └─ installers.yml
+├─ .local/
+│  └─ share/
+│     └─ mcfg/
+│        ├─ logs/
+│        │  └─ install-log.sql
+│        └─ repository/  -&gt;  $HOME/mcfg-repo-simon/
+└─ mcfg-repo-simon/
+   ├─ .config/
+   ├─ .git/  
+   └─ .local/
+</code></pre>
+<pre><code class="language-text">$HOME/
+└─ Library/
+   ├─ Application Support/
+   │  └─ mcfg/
+   │     ├─ installers.yml
+   │     └─ repository/
+   │        ├─ .config/
+   │        ├─ .git/  
+   │        └─ .local/
+   └─ Logs/
+      └─ mcfg/
+         └─ install-log.sql
+</code></pre>
 <h2><a class="header" href="#example-packagerepository-api" id="example-packagerepository-api">Example PackageRepository API</a></h2>
 <pre><pre class="playpen"><code class="language-rust no_run">
 <span class="boring">#![allow(unused_variables)]
@@ -297,10 +367,11 @@ package.</p>
 <h2><a class="header" href="#example-package-set-file" id="example-package-set-file">Example Package Set File</a></h2>
 <pre><code class="language-yaml">name: lux
 env-file: sample.env
-packages:
-  - name: lux
-    kind:
-      language: python
+actions:
+  packages:
+    - name: lux
+      kind:
+        language: python
 link-files:
   set-lux: &quot;{{local-bin}}/set-lux&quot;
 </code></pre>
@@ -308,7 +379,32 @@ link-files:
 <h2><a class="header" href="#env-files" id="env-files">Env Files</a></h2>
 <h2><a class="header" href="#link-files" id="link-files">Link Files</a></h2>
 <h1><a class="header" href="#package-set-groups" id="package-set-groups">Package Set Groups</a></h1>
-<h1><a class="header" href="#installers" id="installers">Installers</a></h1>
+<h2><a class="header" href="#naming" id="naming">Naming</a></h2>
+<p><code>^([0-9]+\-)?(.*)$</code></p>
+<ol>
+<li>A set of package-set groups, these are basically all the directories under the repository
+directory. Certain directories, such as <code>.git</code>, will be ignored.</li>
+<li>A set of package-sets, these are within the group directories and are of one of two forms:
+<ol>
+<li>a directory containing a file with the name <code>package-set.yml</code>, or</li>
+<li>a file in the group directory with the <code>.yml</code> extension.</li>
+</ol>
+</li>
+</ol>
+<pre><code class="language-text">$HOME/
+└─ .local/
+   └─ share/
+      └─ mcfg/
+         └─ repository/
+            ├─ .config/
+            ├─ .git/  
+            ├─ .local/
+            ├─ 01-operating-system/
+            ├─ 02-developer-stuff/
+            ├─ 03-productivity-stuff/
+            └─ 04-work-stuff/
+</code></pre>
+<h1><a class="header" href="#the-installer-registry" id="the-installer-registry">The Installer Registry</a></h1>
 <h1><a class="header" href="#example-installer-registry-file" id="example-installer-registry-file">Example Installer Registry File</a></h1>
 <pre><code class="language-yaml">- name: homebrew
   platform: macos
@@ -344,20 +440,49 @@ link-files:
 let installer_registry = InstallerRegistry::open().unwrap();
 <span class="boring">}
 </span></code></pre></pre>
-<h1><a class="header" href="#script-environments" id="script-environments">Script Environments</a></h1>
+<h1><a class="header" href="#scripts-1" id="scripts-1">Scripts</a></h1>
+<p>Package installers, and package sets, have a number of properties that are intended to execute commands. These are 
+simple YAML strings, but some parsing has to be done to ensure correct handling of a number of possibilities. </p>
+<p>These parsing rules <em>should</em> allow the following patterns of usage:</p>
+<p>A simple self-contained command, no shell interpretation or variable substitution.</p>
+<pre><code class="language-yaml">- name: homebrew
+  commands:
+    update-self: &quot;brew upgrade&quot;
+</code></pre>
+<p>A simple command, but parameterized using one or more of the standard script variables.</p>
+<pre><code class="language-yaml">- name: homebrew
+  commands:
+    install: &quot;brew install {{package}}&quot;
+</code></pre>
+<p>A script to be run using the system shell, or rather a command than can only be interpreted using the system shell.</p>
+<pre><code class="language-yaml">name: hello world
+run-before: echo 'error!!' 1&gt;&amp;2
+</code></pre>
+<p>In this case the command is re-written to be called by the system default shell, equivalent to the following.</p>
+<pre><code class="language-yaml">run-before: {{shell}} -c &quot;echo 'error!!' 1&gt;&amp;2&quot;
+</code></pre>
 <h2><a class="header" href="#script-syntax" id="script-syntax">Script Syntax</a></h2>
+<ul>
+<li><strong>Plain</strong> text</li>
+<li><strong>String</strong></li>
+<li><strong>Variable</strong></li>
+<li><strong>Special</strong></li>
+</ul>
 <h2><a class="header" href="#script-variables" id="script-variables">Script Variables</a></h2>
-<table><thead><tr><th>registry variable</th><th>environment variable</th><th>usage</th><th>example</th></tr></thead><tbody>
-<tr><td><code>command_action</code></td><td><code>MCFG_COMMAND_ACTION</code></td><td>The current tool action</td><td>&quot;install&quot;</td></tr>
-<tr><td><code>command_log_level</code></td><td><code>MCFG_COMMAND_LOG_LEVEL</code></td><td>The current tool max log level</td><td>&quot;info&quot;</td></tr>
-<tr><td><code>local_download_path</code></td><td><code>MCFG_LOCAL_DOWNLOAD_PATH</code></td><td>The user's local download directory</td><td>&quot;/home/alice/Downloads&quot;</td></tr>
-<tr><td><code>local_bin_path</code></td><td><code>MCFG_LOCAL_BIN_PATH</code></td><td>The user's local executable directory</td><td>&quot;/home/alice/.local/bin&quot;</td></tr>
-<tr><td><code>opsys</code></td><td><code>MCFG_OPSYS</code></td><td>The current operating system</td><td>&quot;macos&quot;</td></tr>
-<tr><td><code>shell</code></td><td><code>MCFG_SHELL</code></td><td>The default system shell</td><td>&quot;bash&quot;</td></tr>
-<tr><td><code>package_set_name</code></td><td><code>MCFG_PACKAGE_SET_NAME</code></td><td>The name of the package-set being operated on</td><td>&quot;lux&quot;</td></tr>
-<tr><td><code>package_set_file</code></td><td><code>MCFG_PACKAGE_SET_FILE</code></td><td>The file name of the package-set description</td><td>&quot;package-set.yml&quot;</td></tr>
-<tr><td><code>package_set_path</code></td><td><code>MCFG_PACKAGE_SET_PATH</code></td><td>The path to the package-set enclsing directory</td><td>&quot;/home/alice/.config/mcfg/repository/work-tools/productivity&quot;</td></tr>
-</tbody></table>
+<p>All of these variables are also set as environment variables to be used inside any running script. Each variable name
+is upper-cased and prefixed with &quot;MCFG_&quot;, so <code>command_action</code> becomes <code>MCFG_COMMAND_ACTION</code>.</p>
+<ul>
+<li><code>command_action</code> - the current tool action; one of &quot;install&quot;, &quot;uninstall&quot;, &quot;update&quot;.</li>
+<li><code>command_log_level</code> - the current tool max log level; one of &quot;error&quot;, &quot;warn&quot;, &quot;info&quot;, &quot;debug&quot;, &quot;trace&quot;.</li>
+<li><code>local_download_path</code> - the user's local download directory; e.g. &quot;/home/simon/Downloads&quot;.</li>
+<li><code>opsys</code> - the current operating system; one of &quot;linux&quot; or &quot;macos&quot;.</li>
+<li><code>repo_config_path</code> - ; e.g. &quot;/home/simon/.config/mcfg/repository/.config&quot;.</li>
+<li><code>repo_local_path</code> - ; e.g. &quot;/home/simon/.config/mcfg/repository/.local&quot;.</li>
+<li><code>shell</code> - the default system shell; e.g. &quot;bash&quot;.</li>
+<li><code>package_set_name</code> - the name of the package-set being operated on.</li>
+<li><code>package_set_file</code> - the file name of the package-set description; e.g. &quot;package-set.yml&quot;.</li>
+<li><code>package_set_path</code> - the path to the package-set enclosing directory | &quot;/home/simon/.config/mcfg/repository/work-tools/productivity&quot;.</li>
+</ul>
 <h1><a class="header" href="#the-mcfg-tool" id="the-mcfg-tool">The mcfg Tool</a></h1>
 <h1><a class="header" href="#using-existing-actions" id="using-existing-actions">Using Existing Actions</a></h1>
 <h2><a class="header" href="#example-calling-installaction" id="example-calling-installaction">Example Calling InstallAction</a></h2>

@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Packages, Sets, and Groups - The mcfg Book</title>
+        <title>The Package Set Repository - The mcfg Book</title>
         
 
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
@@ -83,7 +83,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="../introduction/index.html"><strong aria-hidden="true">1.</strong> Introduction</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../introduction/start-here.html"><strong aria-hidden="true">1.1.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="../introduction/tool.html"><strong aria-hidden="true">1.2.</strong> The Tool</a></li><li class="chapter-item expanded "><a href="../introduction/library.html"><strong aria-hidden="true">1.3.</strong> The Library</a></li></ol></li><li class="chapter-item expanded "><a href="../repository/index.html" class="active"><strong aria-hidden="true">2.</strong> Packages, Sets, and Groups</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../repository/packages.html"><strong aria-hidden="true">2.1.</strong> Packages</a></li><li class="chapter-item expanded "><a href="../repository/package-sets.html"><strong aria-hidden="true">2.2.</strong> Packages Sets</a></li><li class="chapter-item expanded "><a href="../repository/package-set-groups.html"><strong aria-hidden="true">2.3.</strong> Package Set Groups</a></li></ol></li><li class="chapter-item expanded "><a href="../installers/index.html"><strong aria-hidden="true">3.</strong> Installers</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../installers/scripts.html"><strong aria-hidden="true">3.1.</strong> Script Environments</a></li></ol></li><li class="chapter-item expanded "><a href="../tool/index.html"><strong aria-hidden="true">4.</strong> The mcfg Tool</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../tool/existing.html"><strong aria-hidden="true">4.1.</strong> Using Existing Actions</a></li><li class="chapter-item expanded "><a href="../tool/new.html"><strong aria-hidden="true">4.2.</strong> Adding New Actions</a></li></ol></li><li class="chapter-item expanded "><a href="../package-sets/index.html"><strong aria-hidden="true">5.</strong> Appendix: Package Sets</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../introduction/index.html"><strong aria-hidden="true">1.</strong> Introduction</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../introduction/start-here.html"><strong aria-hidden="true">1.1.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="../introduction/tool.html"><strong aria-hidden="true">1.2.</strong> The Tool</a></li><li class="chapter-item expanded "><a href="../introduction/library.html"><strong aria-hidden="true">1.3.</strong> The Library</a></li></ol></li><li class="chapter-item expanded "><a href="../repository/index.html" class="active"><strong aria-hidden="true">2.</strong> The Package Set Repository</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../repository/packages.html"><strong aria-hidden="true">2.1.</strong> Packages</a></li><li class="chapter-item expanded "><a href="../repository/package-sets.html"><strong aria-hidden="true">2.2.</strong> Packages Sets</a></li><li class="chapter-item expanded "><a href="../repository/package-set-groups.html"><strong aria-hidden="true">2.3.</strong> Package Set Groups</a></li></ol></li><li class="chapter-item expanded "><a href="../installers/index.html"><strong aria-hidden="true">3.</strong> The Installer Registry</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../installers/scripts.html"><strong aria-hidden="true">3.1.</strong> Scripts</a></li></ol></li><li class="chapter-item expanded "><a href="../tool/index.html"><strong aria-hidden="true">4.</strong> The mcfg Tool</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../tool/existing.html"><strong aria-hidden="true">4.1.</strong> Using Existing Actions</a></li><li class="chapter-item expanded "><a href="../tool/new.html"><strong aria-hidden="true">4.2.</strong> Adding New Actions</a></li></ol></li><li class="chapter-item expanded "><a href="../package-sets/index.html"><strong aria-hidden="true">5.</strong> Appendix: Package Sets</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -153,17 +153,49 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1><a class="header" href="#packages-sets-and-groups" id="packages-sets-and-groups">Packages, Sets, and Groups</a></h1>
-<ol>
-<li>A set of package-set groups, these are basically all the directories under the repository
-directory. Certain directories, such as <code>.git</code>, will be ignored.</li>
-<li>A set of package-sets, these are within the group directories and are of one of two forms:
-<ol>
-<li>a directory containing a file with the name <code>package-set.yml</code>, or</li>
-<li>a file in the group directory with the <code>.yml</code> extension.</li>
-</ol>
-</li>
-</ol>
+                        <h1><a class="header" href="#the-package-set-repository" id="the-package-set-repository">The Package Set Repository</a></h1>
+<pre><code class="language-text">$HOME/
+├─ .config/
+│  └─ mcfg/
+│     └─ installers.yml
+└─ .local/
+   └─ share/
+      └─ mcfg/
+         ├─ logs/
+         │  └─ install-log.sql
+         └─ repository/
+            ├─ .config/
+            ├─ .git/  
+            └─ .local/
+</code></pre>
+<pre><code class="language-text">$HOME/
+├─ .config/
+│  └─ mcfg/
+│     └─ installers.yml
+├─ .local/
+│  └─ share/
+│     └─ mcfg/
+│        ├─ logs/
+│        │  └─ install-log.sql
+│        └─ repository/  -&gt;  $HOME/mcfg-repo-simon/
+└─ mcfg-repo-simon/
+   ├─ .config/
+   ├─ .git/  
+   └─ .local/
+</code></pre>
+<pre><code class="language-text">$HOME/
+└─ Library/
+   ├─ Application Support/
+   │  └─ mcfg/
+   │     ├─ installers.yml
+   │     └─ repository/
+   │        ├─ .config/
+   │        ├─ .git/  
+   │        └─ .local/
+   └─ Logs/
+      └─ mcfg/
+         └─ install-log.sql
+</code></pre>
 <h2><a class="header" href="#example-packagerepository-api" id="example-packagerepository-api">Example PackageRepository API</a></h2>
 <pre><pre class="playpen"><code class="language-rust no_run">
 <span class="boring">#![allow(unused_variables)]

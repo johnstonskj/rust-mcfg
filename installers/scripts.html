@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Script Environments - The mcfg Book</title>
+        <title>Scripts - The mcfg Book</title>
         
 
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
@@ -83,7 +83,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="../introduction/index.html"><strong aria-hidden="true">1.</strong> Introduction</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../introduction/start-here.html"><strong aria-hidden="true">1.1.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="../introduction/tool.html"><strong aria-hidden="true">1.2.</strong> The Tool</a></li><li class="chapter-item expanded "><a href="../introduction/library.html"><strong aria-hidden="true">1.3.</strong> The Library</a></li></ol></li><li class="chapter-item expanded "><a href="../repository/index.html"><strong aria-hidden="true">2.</strong> Packages, Sets, and Groups</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../repository/packages.html"><strong aria-hidden="true">2.1.</strong> Packages</a></li><li class="chapter-item expanded "><a href="../repository/package-sets.html"><strong aria-hidden="true">2.2.</strong> Packages Sets</a></li><li class="chapter-item expanded "><a href="../repository/package-set-groups.html"><strong aria-hidden="true">2.3.</strong> Package Set Groups</a></li></ol></li><li class="chapter-item expanded "><a href="../installers/index.html"><strong aria-hidden="true">3.</strong> Installers</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../installers/scripts.html" class="active"><strong aria-hidden="true">3.1.</strong> Script Environments</a></li></ol></li><li class="chapter-item expanded "><a href="../tool/index.html"><strong aria-hidden="true">4.</strong> The mcfg Tool</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../tool/existing.html"><strong aria-hidden="true">4.1.</strong> Using Existing Actions</a></li><li class="chapter-item expanded "><a href="../tool/new.html"><strong aria-hidden="true">4.2.</strong> Adding New Actions</a></li></ol></li><li class="chapter-item expanded "><a href="../package-sets/index.html"><strong aria-hidden="true">5.</strong> Appendix: Package Sets</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../introduction/index.html"><strong aria-hidden="true">1.</strong> Introduction</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../introduction/start-here.html"><strong aria-hidden="true">1.1.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="../introduction/tool.html"><strong aria-hidden="true">1.2.</strong> The Tool</a></li><li class="chapter-item expanded "><a href="../introduction/library.html"><strong aria-hidden="true">1.3.</strong> The Library</a></li></ol></li><li class="chapter-item expanded "><a href="../repository/index.html"><strong aria-hidden="true">2.</strong> The Package Set Repository</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../repository/packages.html"><strong aria-hidden="true">2.1.</strong> Packages</a></li><li class="chapter-item expanded "><a href="../repository/package-sets.html"><strong aria-hidden="true">2.2.</strong> Packages Sets</a></li><li class="chapter-item expanded "><a href="../repository/package-set-groups.html"><strong aria-hidden="true">2.3.</strong> Package Set Groups</a></li></ol></li><li class="chapter-item expanded "><a href="../installers/index.html"><strong aria-hidden="true">3.</strong> The Installer Registry</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../installers/scripts.html" class="active"><strong aria-hidden="true">3.1.</strong> Scripts</a></li></ol></li><li class="chapter-item expanded "><a href="../tool/index.html"><strong aria-hidden="true">4.</strong> The mcfg Tool</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../tool/existing.html"><strong aria-hidden="true">4.1.</strong> Using Existing Actions</a></li><li class="chapter-item expanded "><a href="../tool/new.html"><strong aria-hidden="true">4.2.</strong> Adding New Actions</a></li></ol></li><li class="chapter-item expanded "><a href="../package-sets/index.html"><strong aria-hidden="true">5.</strong> Appendix: Package Sets</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -153,20 +153,49 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1><a class="header" href="#script-environments" id="script-environments">Script Environments</a></h1>
+                        <h1><a class="header" href="#scripts" id="scripts">Scripts</a></h1>
+<p>Package installers, and package sets, have a number of properties that are intended to execute commands. These are 
+simple YAML strings, but some parsing has to be done to ensure correct handling of a number of possibilities. </p>
+<p>These parsing rules <em>should</em> allow the following patterns of usage:</p>
+<p>A simple self-contained command, no shell interpretation or variable substitution.</p>
+<pre><code class="language-yaml">- name: homebrew
+  commands:
+    update-self: &quot;brew upgrade&quot;
+</code></pre>
+<p>A simple command, but parameterized using one or more of the standard script variables.</p>
+<pre><code class="language-yaml">- name: homebrew
+  commands:
+    install: &quot;brew install {{package}}&quot;
+</code></pre>
+<p>A script to be run using the system shell, or rather a command than can only be interpreted using the system shell.</p>
+<pre><code class="language-yaml">name: hello world
+run-before: echo 'error!!' 1&gt;&amp;2
+</code></pre>
+<p>In this case the command is re-written to be called by the system default shell, equivalent to the following.</p>
+<pre><code class="language-yaml">run-before: {{shell}} -c &quot;echo 'error!!' 1&gt;&amp;2&quot;
+</code></pre>
 <h2><a class="header" href="#script-syntax" id="script-syntax">Script Syntax</a></h2>
+<ul>
+<li><strong>Plain</strong> text</li>
+<li><strong>String</strong></li>
+<li><strong>Variable</strong></li>
+<li><strong>Special</strong></li>
+</ul>
 <h2><a class="header" href="#script-variables" id="script-variables">Script Variables</a></h2>
-<table><thead><tr><th>registry variable</th><th>environment variable</th><th>usage</th><th>example</th></tr></thead><tbody>
-<tr><td><code>command_action</code></td><td><code>MCFG_COMMAND_ACTION</code></td><td>The current tool action</td><td>&quot;install&quot;</td></tr>
-<tr><td><code>command_log_level</code></td><td><code>MCFG_COMMAND_LOG_LEVEL</code></td><td>The current tool max log level</td><td>&quot;info&quot;</td></tr>
-<tr><td><code>local_download_path</code></td><td><code>MCFG_LOCAL_DOWNLOAD_PATH</code></td><td>The user's local download directory</td><td>&quot;/home/alice/Downloads&quot;</td></tr>
-<tr><td><code>local_bin_path</code></td><td><code>MCFG_LOCAL_BIN_PATH</code></td><td>The user's local executable directory</td><td>&quot;/home/alice/.local/bin&quot;</td></tr>
-<tr><td><code>opsys</code></td><td><code>MCFG_OPSYS</code></td><td>The current operating system</td><td>&quot;macos&quot;</td></tr>
-<tr><td><code>shell</code></td><td><code>MCFG_SHELL</code></td><td>The default system shell</td><td>&quot;bash&quot;</td></tr>
-<tr><td><code>package_set_name</code></td><td><code>MCFG_PACKAGE_SET_NAME</code></td><td>The name of the package-set being operated on</td><td>&quot;lux&quot;</td></tr>
-<tr><td><code>package_set_file</code></td><td><code>MCFG_PACKAGE_SET_FILE</code></td><td>The file name of the package-set description</td><td>&quot;package-set.yml&quot;</td></tr>
-<tr><td><code>package_set_path</code></td><td><code>MCFG_PACKAGE_SET_PATH</code></td><td>The path to the package-set enclsing directory</td><td>&quot;/home/alice/.config/mcfg/repository/work-tools/productivity&quot;</td></tr>
-</tbody></table>
+<p>All of these variables are also set as environment variables to be used inside any running script. Each variable name
+is upper-cased and prefixed with &quot;MCFG_&quot;, so <code>command_action</code> becomes <code>MCFG_COMMAND_ACTION</code>.</p>
+<ul>
+<li><code>command_action</code> - the current tool action; one of &quot;install&quot;, &quot;uninstall&quot;, &quot;update&quot;.</li>
+<li><code>command_log_level</code> - the current tool max log level; one of &quot;error&quot;, &quot;warn&quot;, &quot;info&quot;, &quot;debug&quot;, &quot;trace&quot;.</li>
+<li><code>local_download_path</code> - the user's local download directory; e.g. &quot;/home/simon/Downloads&quot;.</li>
+<li><code>opsys</code> - the current operating system; one of &quot;linux&quot; or &quot;macos&quot;.</li>
+<li><code>repo_config_path</code> - ; e.g. &quot;/home/simon/.config/mcfg/repository/.config&quot;.</li>
+<li><code>repo_local_path</code> - ; e.g. &quot;/home/simon/.config/mcfg/repository/.local&quot;.</li>
+<li><code>shell</code> - the default system shell; e.g. &quot;bash&quot;.</li>
+<li><code>package_set_name</code> - the name of the package-set being operated on.</li>
+<li><code>package_set_file</code> - the file name of the package-set description; e.g. &quot;package-set.yml&quot;.</li>
+<li><code>package_set_path</code> - the path to the package-set enclosing directory | &quot;/home/simon/.config/mcfg/repository/work-tools/productivity&quot;.</li>
+</ul>
 
                     </main>
 

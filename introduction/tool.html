@@ -83,7 +83,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="../introduction/index.html"><strong aria-hidden="true">1.</strong> Introduction</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../introduction/start-here.html"><strong aria-hidden="true">1.1.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="../introduction/tool.html" class="active"><strong aria-hidden="true">1.2.</strong> The Tool</a></li><li class="chapter-item expanded "><a href="../introduction/library.html"><strong aria-hidden="true">1.3.</strong> The Library</a></li></ol></li><li class="chapter-item expanded "><a href="../repository/index.html"><strong aria-hidden="true">2.</strong> Packages, Sets, and Groups</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../repository/packages.html"><strong aria-hidden="true">2.1.</strong> Packages</a></li><li class="chapter-item expanded "><a href="../repository/package-sets.html"><strong aria-hidden="true">2.2.</strong> Packages Sets</a></li><li class="chapter-item expanded "><a href="../repository/package-set-groups.html"><strong aria-hidden="true">2.3.</strong> Package Set Groups</a></li></ol></li><li class="chapter-item expanded "><a href="../installers/index.html"><strong aria-hidden="true">3.</strong> Installers</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../installers/scripts.html"><strong aria-hidden="true">3.1.</strong> Script Environments</a></li></ol></li><li class="chapter-item expanded "><a href="../tool/index.html"><strong aria-hidden="true">4.</strong> The mcfg Tool</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../tool/existing.html"><strong aria-hidden="true">4.1.</strong> Using Existing Actions</a></li><li class="chapter-item expanded "><a href="../tool/new.html"><strong aria-hidden="true">4.2.</strong> Adding New Actions</a></li></ol></li><li class="chapter-item expanded "><a href="../package-sets/index.html"><strong aria-hidden="true">5.</strong> Appendix: Package Sets</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../introduction/index.html"><strong aria-hidden="true">1.</strong> Introduction</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../introduction/start-here.html"><strong aria-hidden="true">1.1.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="../introduction/tool.html" class="active"><strong aria-hidden="true">1.2.</strong> The Tool</a></li><li class="chapter-item expanded "><a href="../introduction/library.html"><strong aria-hidden="true">1.3.</strong> The Library</a></li></ol></li><li class="chapter-item expanded "><a href="../repository/index.html"><strong aria-hidden="true">2.</strong> The Package Set Repository</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../repository/packages.html"><strong aria-hidden="true">2.1.</strong> Packages</a></li><li class="chapter-item expanded "><a href="../repository/package-sets.html"><strong aria-hidden="true">2.2.</strong> Packages Sets</a></li><li class="chapter-item expanded "><a href="../repository/package-set-groups.html"><strong aria-hidden="true">2.3.</strong> Package Set Groups</a></li></ol></li><li class="chapter-item expanded "><a href="../installers/index.html"><strong aria-hidden="true">3.</strong> The Installer Registry</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../installers/scripts.html"><strong aria-hidden="true">3.1.</strong> Scripts</a></li></ol></li><li class="chapter-item expanded "><a href="../tool/index.html"><strong aria-hidden="true">4.</strong> The mcfg Tool</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../tool/existing.html"><strong aria-hidden="true">4.1.</strong> Using Existing Actions</a></li><li class="chapter-item expanded "><a href="../tool/new.html"><strong aria-hidden="true">4.2.</strong> Adding New Actions</a></li></ol></li><li class="chapter-item expanded "><a href="../package-sets/index.html"><strong aria-hidden="true">5.</strong> Appendix: Package Sets</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -185,13 +185,22 @@ SUBCOMMANDS:
     update-self    Show the current configuration
 </code></pre>
 <h2><a class="header" href="#package-repository-commands" id="package-repository-commands">Package Repository Commands</a></h2>
-<ul>
-<li><strong>add</strong> add a new package set to your repository. Requires a group name and package set name.</li>
-<li><strong>edit</strong> edit an existing package set in your repository. Requires a group name and package set name.</li>
-<li><strong>list</strong> list the groups and package sets in your repository. If given a group name it only lists packages in that group.</li>
-<li><strong>refresh</strong> refresh the repository by performing a Git pull.</li>
-<li><strong>remove</strong> remove an existing package set from your repository. Requires a group name and package set name.</li>
-</ul>
+<h3><a class="header" href="#init" id="init">Init</a></h3>
+<pre><code class="language-text">$ mcfg init -l ~/dotfiles-2
+1. Creating local directory for repository
+2. Initializing Git repository
+3. Creating repository link &quot;/Users/simonjo/dotfiles-2&quot; -&gt; &quot;/Users/simonjo/Library/Application Support/mcfg/repository&quot;
+4. Creating repository config/local directories
+5. Creating 'example/hello world' package set
+6. Creating initial installer registry file
+Done.
+</code></pre>
+<h3><a class="header" href="#add-edit-remove" id="add-edit-remove">Add, Edit, Remove</a></h3>
+<p>TBD</p>
+<h3><a class="header" href="#list" id="list">List</a></h3>
+<p>TBD</p>
+<h3><a class="header" href="#refresh" id="refresh">Refresh</a></h3>
+<p>TBD</p>
 <h2><a class="header" href="#package-commands" id="package-commands">Package Commands</a></h2>
 <p>All take -p and -g</p>
 <ul>
@@ -201,16 +210,32 @@ SUBCOMMANDS:
 <li><strong>update</strong> update package sets.</li>
 </ul>
 <h2><a class="header" href="#installer-commands" id="installer-commands">Installer Commands</a></h2>
-<ul>
-<li><strong>history</strong> show the history of package installations.</li>
-<li><strong>update-self</strong> update any installer in the registry with an <code>update-self</code> script property.</li>
-</ul>
+<h3><a class="header" href="#history" id="history">History</a></h3>
+<pre><code class="language-text">+-------------------------------+--------+---------+---------+-----------+
+| Date                          | Group  | Set     | Package | Installer |
++===============================+========+=========+=========+===========+
+| 2021-03-11 20:28:04.339072 +0 | system | gnu-sed | gnu-sed | homebrew  |
++-------------------------------+--------+---------+---------+-----------+
+</code></pre>
+<h3><a class="header" href="#update-self" id="update-self">Update Self</a></h3>
+<p>TBD</p>
 <h2><a class="header" href="#information-commands" id="information-commands">Information Commands</a></h2>
 <ul>
 <li><strong>installers</strong> edit the current installer registry.</li>
-<li><strong>help</strong> show the help text above.</li>
-<li><strong>paths</strong> show the location for key components of the tool, the installer registry, package repository, and log file.</li>
 </ul>
+<h3><a class="header" href="#paths" id="paths">Paths</a></h3>
+<pre><code class="language-text">$ mcfg paths
+Package Repository path:
+	&quot;/Users/simon/Library/Application Support/mcfg/repository&quot;
+Package Repository config file path:
+	&quot;/Users/simon/Library/Application Support/mcfg/repository/.config&quot;
+Package Repository local file path:
+	&quot;/Users/simon/Library/Application Support/mcfg/repository/.local&quot;
+Installer Registry path:
+	&quot;/Users/simon/Library/Application Support/mcfg/installers.yml&quot;
+Package Installer log file path:
+	&quot;/Users/simon/Library/Logs/mcfg/install-log.sql&quot;
+</code></pre>
 
                     </main>
 
