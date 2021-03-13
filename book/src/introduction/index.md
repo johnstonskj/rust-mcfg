@@ -6,4 +6,13 @@ existing package managers such as [homebrew](https://brew.sh/), [apt](https://en
 or [yum](https://en.wikipedia.org/wiki/Yum_(software)). It allows for packages to be grouped into package sets which
 are the units of management and then package sets into groups for simple organization.
 
-The description of package sets are in YAML files and 
+The intent is to provide a light-weigh way to describe the installation of a lot of related packages, scripts, and 
+customizations that comprise a machine environment. Specifically this was developed for keeping developer desktops 
+as close as possible between different laptop or desktop machines and between Linux and macOS systems.
+
+The tool keeps all of it's package sets organized in a repository which just happens to be a Git repo and so can 
+be versioned and easily shared between machines. It allows for the specification of different installer tools that
+will be used to do actual package management, so the user doesn't need to remember specific command-lines or other
+details. This repo can also include any additional scripts or tools the user needs, and the execution of the package
+set includes a set of environment variables to allow scripts to run without knowing any O/S or machine specific 
+paths or other details.

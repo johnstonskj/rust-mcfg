@@ -10,6 +10,12 @@
 $ mcfg paths
 Package Repository path:
 	"/Users/simonjo/Library/Application Support/mcfg/repository"
+Package Repository symlinked to:
+	"/Users/simonjo/dotfiles-2"
+Package Repository config file path:
+	"/Users/simonjo/Library/Application Support/mcfg/repository/.config"
+Package Repository local file path:
+	"/Users/simonjo/Library/Application Support/mcfg/repository/.local"
 Installer Registry path:
 	"/Users/simonjo/Library/Application Support/mcfg/installers.yml"
 Package Installer log file path:
@@ -28,4 +34,3 @@ operating-system specific log directory.
 
 ## Add Package Sets
 
-### Install Order and Naming

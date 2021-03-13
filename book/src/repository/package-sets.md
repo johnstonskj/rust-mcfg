@@ -15,10 +15,11 @@ A package set is described in a YAML file, usually named `package-set.yml` and w
 ```yaml
 name: lux
 env-file: sample.env
-packages:
-  - name: lux
-    kind:
-      language: python
+actions:
+  packages:
+    - name: lux
+      kind:
+        language: python
 link-files:
   set-lux: "{{local-bin}}/set-lux"
 ```

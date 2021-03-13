@@ -35,11 +35,30 @@ SUBCOMMANDS:
 
 ## Package Repository Commands
 
-* **add** add a new package set to your repository. Requires a group name and package set name.
-* **edit** edit an existing package set in your repository. Requires a group name and package set name.
-* **list** list the groups and package sets in your repository. If given a group name it only lists packages in that group.
-* **refresh** refresh the repository by performing a Git pull.
-* **remove** remove an existing package set from your repository. Requires a group name and package set name.
+### Init
+
+```text
+$ mcfg init -l ~/dotfiles-2
+1. Creating local directory for repository
+2. Initializing Git repository
+3. Creating repository link "/Users/simonjo/dotfiles-2" -> "/Users/simonjo/Library/Application Support/mcfg/repository"
+4. Creating repository config/local directories
+5. Creating 'example/hello world' package set
+6. Creating initial installer registry file
+Done.
+```
+
+### Add, Edit, Remove
+
+TBD
+
+### List
+
+TBD
+
+### Refresh
+
+TBD
 
 ## Package Commands
 
@@ -52,11 +71,36 @@ All take -p and -g
 
 ## Installer Commands
 
-* **history** show the history of package installations.
-* **update-self** update any installer in the registry with an `update-self` script property.
+### History
+
+```text
++-------------------------------+--------+---------+---------+-----------+
+| Date                          | Group  | Set     | Package | Installer |
++===============================+========+=========+=========+===========+
+| 2021-03-11 20:28:04.339072 +0 | system | gnu-sed | gnu-sed | homebrew  |
++-------------------------------+--------+---------+---------+-----------+
+```
+
+### Update Self
+
+TBD
 
 ## Information Commands
 
 * **installers** edit the current installer registry.
-* **help** show the help text above.
-* **paths** show the location for key components of the tool, the installer registry, package repository, and log file.
+
+### Paths
+
+```text
+$ mcfg paths
+Package Repository path:
+	"/Users/simon/Library/Application Support/mcfg/repository"
+Package Repository config file path:
+	"/Users/simon/Library/Application Support/mcfg/repository/.config"
+Package Repository local file path:
+	"/Users/simon/Library/Application Support/mcfg/repository/.local"
+Installer Registry path:
+	"/Users/simon/Library/Application Support/mcfg/installers.yml"
+Package Installer log file path:
+	"/Users/simon/Library/Logs/mcfg/install-log.sql"
+```

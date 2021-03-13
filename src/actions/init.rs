@@ -10,7 +10,6 @@ More detailed description, with
 use crate::actions::Action;
 use crate::error::Result;
 use crate::shared::install_log::PackageLog;
-use crate::shared::installer::REGISTRY_FILE;
 use crate::shared::{InstallerRegistry, PackageRepository};
 use git2::Repository;
 use std::path::PathBuf;
@@ -39,50 +38,89 @@ pub struct InitAction {
 
 impl Action for InitAction {
     fn run(&self) -> Result<()> {
+        let mut steps = 1..;
         info!("InitAction::run {:?}", self);
         let (link_required, local_dir) = match &self.local_dir {
             None => (false, PackageRepository::default_path()),
             Some(path) => (true, PathBuf::from(path)),
         };
-        std::fs::create_dir_all(local_dir.clone())?;
+        println!(
+            "{}. Creating local directory for repository",
+            steps.next().unwrap()
+        );
+        debug!("InitAction::run local_dir={:?}", local_dir);
+        std::fs::create_dir_all(&local_dir)?;
         let git_repo = local_dir.clone().join(".git");
         if !git_repo.is_dir() {
             match &self.repository_url {
                 None => {
-                    debug!("InitAction::run git init in {:?}", local_dir.clone());
+                    println!("{}. Initializing Git repository", steps.next().unwrap());
                     let _ = Repository::init(local_dir.clone())?;
-                    // TODO: add a hello-world example package-set
                 }
                 Some(repo_url) => {
-                    debug!("InitAction::run git clone: {}", repo_url);
+                    println!(
+                        "{}. Cloning <{}> into repository",
+                        steps.next().unwrap(),
+                        &repo_url
+                    );
+                    debug!("InitAction::run repo_url={:?}", repo_url);
                     let _ = Repository::clone(repo_url, local_dir.clone())?;
                 }
             }
         } else {
             debug!("InitAction::run git repo exists, ignoring init/clone");
         }
+
         let repository_path = PackageRepository::default_path();
         if link_required {
-            debug!(
-                "InitAction::run creating symlink to local dir: {:?} -> {:?}",
-                local_dir, &repository_path
+            println!(
+                "{}. Creating repository link {:?} -> {:?}",
+                steps.next().unwrap(),
+                local_dir,
+                &repository_path
             );
-            std::fs::create_dir_all(&repository_path)?;
+            debug!("InitAction::run repository_path={:?}", repository_path);
+            std::fs::create_dir_all(repository_path.parent().unwrap())?;
             std::os::unix::fs::symlink(local_dir, &repository_path)?;
         }
-        let config_path = InstallerRegistry::default_path();
-        if !config_path.is_dir() {
-            debug!("InitAction::run creating config path: {:?}", &config_path);
-            std::fs::create_dir_all(&config_path)?;
-        } else {
-            debug!("InitAction::run config path {:?} exists", &config_path);
-        }
-        let installer_registry = config_path.join(REGISTRY_FILE);
+        println!(
+            "{}. Creating repository config/local directories",
+            steps.next().unwrap()
+        );
+        std::fs::create_dir_all(PackageRepository::default_config_path())?;
+        std::fs::create_dir_all(PackageRepository::default_local_path())?;
+
+        println!(
+            "{}. Creating 'example/hello world' package set",
+            steps.next().unwrap()
+        );
+        let example_group_path = repository_path.join("example");
+        debug!(
+            " InitAction::run example_group_path={:?}",
+            example_group_path
+        );
+        std::fs::create_dir_all(&example_group_path)?;
+        let example_set_file = example_group_path.join("hello-world.yml");
+        debug!(" InitAction::run example_set_file={:?}", example_set_file);
+        std::fs::write(
+            example_set_file,
+            r##"---
+        name: hello world
+        description: just a test to make sure things work
+        run-before: cargo --version"##,
+        )?;
+
+        let installer_registry = InstallerRegistry::default_path();
         if !installer_registry.is_file() {
-            debug!(
-                "InitAction::run creating default installer config file: {:?}",
-                &installer_registry
+            println!(
+                "{}. Creating initial installer registry file",
+                steps.next().unwrap()
             );
+            debug!(
+                " InitAction::run installer_registry={:?}",
+                installer_registry
+            );
+            std::fs::create_dir_all(installer_registry.parent().unwrap())?;
             std::fs::write(
                 installer_registry,
                 r##"---
@@ -135,6 +173,7 @@ impl Action for InitAction {
             );
         }
         let _ = PackageLog::open();
+        println!("Done.");
         Ok(())
     }
 }

@@ -25,7 +25,8 @@ use std::str::FromStr;
 // Public Types
 // ------------------------------------------------------------------------------------------------
 
-#[derive(Debug)]
+#[derive(Deserialize, Serialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[serde(rename_all = "kebab-case")]
 pub enum InstallActionKind {
     Install,
     Update,
@@ -335,21 +336,32 @@ impl InstallerRegistry {
             execute_shell_command(cmd_str, &variable_replacements)?;
         }
 
-        trace!("executing all package actions");
-        for package in package_set.packages() {
-            match self.installer_for(package.platform(), package.kind().clone()) {
-                None => return Err(ErrorKind::NoInstallerForKind(package.kind().clone()).into()),
-                Some(installer) => {
-                    let _ = variable_replacements
-                        .insert("package_name".to_string(), package.name().to_string());
-                    installer.package_action(action, package, &variable_replacements)?;
-                    log_db.log_installed_package(&InstalledPackage::new(
-                        package_set_group.name(),
-                        package_set.name(),
-                        package.name(),
-                        installer.name(),
-                    ))?;
+        if let Some(packages) = package_set.packages() {
+            trace!("executing all package actions");
+            for package in packages {
+                match self.installer_for(package.platform(), package.kind().clone()) {
+                    None => {
+                        return Err(ErrorKind::NoInstallerForKind(package.kind().clone()).into())
+                    }
+                    Some(installer) => {
+                        let _ = variable_replacements
+                            .insert("package_name".to_string(), package.name().to_string());
+                        installer.package_action(action, package, &variable_replacements)?;
+                        log_db.log_installed_package(&InstalledPackage::new(
+                            package_set_group.name(),
+                            package_set.name(),
+                            package.name(),
+                            installer.name(),
+                        ))?;
+                    }
                 }
+            }
+        }
+
+        if let Some(scripts) = package_set.scripts() {
+            if let Some(cmd_str) = scripts.get(action) {
+                trace!("executing {:?} script", action);
+                execute_shell_command(cmd_str, &variable_replacements)?;
             }
         }
 
@@ -412,16 +424,19 @@ impl InstallerRegistry {
                 .to_string_lossy()
                 .to_string(),
         );
-        let _ = replacements.insert(
-            "local_bin_path".to_string(),
-            match dirs_next::executable_dir() {
-                None => dirs_next::home_dir().unwrap().join("bin"),
-                Some(dir) => dir,
-            }
-            .to_string_lossy()
-            .to_string(),
-        );
         let _ = replacements.insert("opsys".to_string(), Platform::CURRENT.to_string());
+        let _ = replacements.insert(
+            "repo_config_path".to_string(),
+            PackageRepository::default_config_path()
+                .to_string_lossy()
+                .to_string(),
+        );
+        let _ = replacements.insert(
+            "repo_local_path".to_string(),
+            PackageRepository::default_local_path()
+                .to_string_lossy()
+                .to_string(),
+        );
         let _ = replacements.insert("shell".to_string(), "bash".to_string());
 
         if let Some(package_set) = package_set {

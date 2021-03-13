@@ -1,11 +1,53 @@
-# Packages, Sets, and Groups
+# The Package Set Repository
 
 
-1. A set of package-set groups, these are basically all the directories under the repository
-   directory. Certain directories, such as `.git`, will be ignored.
-1. A set of package-sets, these are within the group directories and are of one of two forms:
-    1. a directory containing a file with the name `package-set.yml`, or
-    1. a file in the group directory with the `.yml` extension.
+```text
+$HOME/
+├─ .config/
+│  └─ mcfg/
+│     └─ installers.yml
+└─ .local/
+   └─ share/
+      └─ mcfg/
+         ├─ logs/
+         │  └─ install-log.sql
+         └─ repository/
+            ├─ .config/
+            ├─ .git/  
+            └─ .local/
+```
+
+```text
+$HOME/
+├─ .config/
+│  └─ mcfg/
+│     └─ installers.yml
+├─ .local/
+│  └─ share/
+│     └─ mcfg/
+│        ├─ logs/
+│        │  └─ install-log.sql
+│        └─ repository/  ->  $HOME/mcfg-repo-simon/
+└─ mcfg-repo-simon/
+   ├─ .config/
+   ├─ .git/  
+   └─ .local/
+```
+
+```text
+$HOME/
+└─ Library/
+   ├─ Application Support/
+   │  └─ mcfg/
+   │     ├─ installers.yml
+   │     └─ repository/
+   │        ├─ .config/
+   │        ├─ .git/  
+   │        └─ .local/
+   └─ Logs/
+      └─ mcfg/
+         └─ install-log.sql
+```
 
 ## Example PackageRepository API
 
@@ -14,4 +56,3 @@ use mcfg::shared::PackageRepository;
 
 let package_repository = PackageRepository::open().unwrap();
 ```
-

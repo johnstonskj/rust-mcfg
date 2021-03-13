@@ -42,6 +42,14 @@ impl Action for ShowPathsAction {
             println!("Package Repository symlinked to:\n\t{:?}", &local_location);
         }
         println!(
+            "Package Repository config file path:\n\t{:?}",
+            &PackageRepository::default_config_path()
+        );
+        println!(
+            "Package Repository local file path:\n\t{:?}",
+            &PackageRepository::default_local_path()
+        );
+        println!(
             "Installer Registry path:\n\t{:?}",
             InstallerRegistry::default_path()
         );

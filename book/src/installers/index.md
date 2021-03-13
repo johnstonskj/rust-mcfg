@@ -1,4 +1,4 @@
-# Installers
+# The Installer Registry
 
 # Example Installer Registry File
 

@@ -8,8 +8,9 @@ More detailed description, with
 */
 
 use crate::error::Result;
-use crate::shared::{PackageKind, Platform};
+use crate::shared::{InstallActionKind, PackageKind, Platform};
 use crate::APP_NAME;
+use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::env::current_dir;
@@ -21,7 +22,7 @@ use std::path::PathBuf;
 // Public Types
 // ------------------------------------------------------------------------------------------------
 
-#[derive(Deserialize, Serialize, Clone, Debug)]
+#[derive(Deserialize, Serialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "kebab-case")]
 pub struct Package {
     name: String,
@@ -29,6 +30,19 @@ pub struct Package {
     platform: Option<Platform>,
     #[serde(default, skip_serializing_if = "is_default")]
     kind: PackageKind,
+}
+
+#[derive(Deserialize, Serialize, Clone, Debug, PartialEq)]
+#[serde(untagged, rename_all = "kebab-case")]
+pub enum PackageSetActions {
+    Packages {
+        #[serde(default, skip_serializing_if = "Vec::is_empty")]
+        packages: Vec<Package>,
+    },
+    Scripts {
+        #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+        scripts: HashMap<InstallActionKind, String>,
+    },
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
@@ -43,8 +57,8 @@ pub struct PackageSet {
     optional: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     run_before: Option<String>,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    packages: Vec<Package>,
+    #[serde(default, skip_serializing_if = "PackageSetActions::is_empty")]
+    actions: PackageSetActions,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     env_file: Option<String>,
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
@@ -80,6 +94,31 @@ pub const REPOSITORY_DIR: &str = "repository";
 // Implementations
 // ------------------------------------------------------------------------------------------------
 
+impl Default for PackageSetActions {
+    fn default() -> Self {
+        Self::Packages {
+            packages: Default::default(),
+        }
+    }
+}
+
+impl From<Vec<Package>> for PackageSetActions {
+    fn from(packages: Vec<Package>) -> Self {
+        Self::Packages { packages }
+    }
+}
+
+impl PackageSetActions {
+    pub fn is_empty(&self) -> bool {
+        match self {
+            PackageSetActions::Packages { packages } => packages.is_empty(),
+            PackageSetActions::Scripts { scripts } => scripts.is_empty(),
+        }
+    }
+}
+
+// ------------------------------------------------------------------------------------------------
+
 impl Package {
     pub fn name(&self) -> &String {
         &self.name
@@ -113,8 +152,18 @@ impl PackageSet {
         &self.description
     }
 
-    pub fn packages(&self) -> impl Iterator<Item = &Package> {
-        self.packages.iter()
+    pub fn packages(&self) -> Option<impl Iterator<Item = &Package>> {
+        match &self.actions {
+            PackageSetActions::Packages { packages } => Some(packages.iter()),
+            PackageSetActions::Scripts { .. } => None,
+        }
+    }
+
+    pub fn scripts(&self) -> Option<&HashMap<InstallActionKind, String>> {
+        match &self.actions {
+            PackageSetActions::Packages { .. } => None,
+            PackageSetActions::Scripts { scripts } => Some(scripts),
+        }
     }
 
     pub fn env_file(&self) -> Option<PathBuf> {
@@ -148,6 +197,10 @@ impl PackageSet {
 
 // ------------------------------------------------------------------------------------------------
 
+lazy_static! {
+    static ref PSG_NAME: Regex = Regex::new(r#"^([0-9]+\-)?(.*)$"#).unwrap();
+}
+
 impl PackageSetGroup {
     pub fn name(&self) -> &String {
         &self.name
@@ -171,8 +224,17 @@ impl PackageSetGroup {
 
     pub fn read(path: &PathBuf) -> Result<Self> {
         debug!("PackageSetGroup::read: reading dir {:?}", path);
+        let name = path.file_name().unwrap().to_string_lossy().to_string();
+        let captures = PSG_NAME.captures(&name);
+        let name = if let Some(captures) = captures {
+            let name = captures.get(2).unwrap();
+            name.as_str().to_string()
+        } else {
+            name
+        }
+        .replace('-', " ");
         let mut group = PackageSetGroup {
-            name: path.file_name().unwrap().to_string_lossy().to_string(),
+            name,
             path: path.clone(),
             package_sets: Default::default(),
         };
@@ -201,11 +263,23 @@ impl PackageSetGroup {
 
 // ------------------------------------------------------------------------------------------------
 
+lazy_static! {
+    static ref RESERVED_REPO_NAMES: Vec<&'static str> = vec![".git", ".config", ".local"];
+}
+
 impl PackageRepository {
     pub fn default_path() -> PathBuf {
         xdirs::config_dir_for(APP_NAME)
             .unwrap()
             .join(REPOSITORY_DIR)
+    }
+
+    pub fn default_config_path() -> PathBuf {
+        Self::default_path().join(".config")
+    }
+
+    pub fn default_local_path() -> PathBuf {
+        Self::default_path().join(".local")
     }
 
     pub fn open() -> Result<Self> {
@@ -219,16 +293,22 @@ impl PackageRepository {
 
     fn actual_open(repository_path: PathBuf) -> Result<Self> {
         info!(
-            "PackageRepository::open: reading all package data from {:?}",
+            "PackageRepository::actual_open: reading all package data from {:?}",
             &repository_path
         );
         let mut package_set_groups: Vec<PackageSetGroup> = Default::default();
         for dir_entry in read_dir(&repository_path)? {
             let group_path = dir_entry?.path();
             if group_path.is_dir() {
-                if group_path.to_string_lossy().to_string().ends_with("/.git") {
+                trace!(
+                    "PackageRepository::actual_open: found possible group dir {:?} -> {:?}",
+                    &group_path,
+                    group_path.file_name(),
+                );
+                let dir_name = group_path.file_name().unwrap().to_str().unwrap();
+                if RESERVED_REPO_NAMES.contains(&dir_name) {
                     debug!(
-                        "PackageRepository::open: some files are always ignored ({:?}).",
+                        "PackageRepository::actual_open: some files are always ignored ({:?}).",
                         group_path
                     );
                 } else {
@@ -271,6 +351,7 @@ impl PackageRepository {
 fn is_default<T: Default + PartialEq>(t: &T) -> bool {
     t == &T::default()
 }
+
 // ------------------------------------------------------------------------------------------------
 // Modules
 // ------------------------------------------------------------------------------------------------
@@ -284,14 +365,15 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_parse() {
+    fn test_parse_packages() {
         let config_str = r##"
         name: lux
         env-file: sample.env
-        packages:
-          - name: lux
-            kind: 
-              language: python
+        actions:
+          packages:
+            - name: lux
+              kind: 
+                language: python
         link-files:
           set-lux: "{{local-bin}}/set-lux"
         "##;
@@ -301,18 +383,37 @@ mod tests {
     }
 
     #[test]
-    fn test_to_string() {
+    fn test_parse_scripts() {
+        let config_str = r##"
+        name: lux
+        env-file: sample.env
+        actions:
+          scripts:
+            install: install-lux
+            uninstall: uninstall-lux 
+        link-files:
+          set-lux: "{{local-bin}}/set-lux"
+        "##;
+
+        let config: PackageSet = serde_yaml::from_str(config_str).unwrap();
+        println!("{:?}", config);
+    }
+
+    #[test]
+    fn test_packages_to_string() {
         let config = PackageSet {
             path: PathBuf::default(),
             name: "lux".to_string(),
             description: None,
             optional: false,
             env_file: Some("sample.env".to_string()),
-            packages: vec![Package {
-                name: "lux".to_string(),
-                platform: None,
-                kind: PackageKind::Language("python".to_string()),
-            }],
+            actions: PackageSetActions::Packages {
+                packages: vec![Package {
+                    name: "lux".to_string(),
+                    platform: None,
+                    kind: PackageKind::Language("python".to_string()),
+                }],
+            },
             link_files: vec![("set-lux".to_string(), "{{local-bin}}/set-lux".to_string())]
                 .iter()
                 .cloned()
@@ -320,8 +421,35 @@ mod tests {
             run_before: None,
             run_after: None,
         };
-
         let config_str = serde_yaml::to_string(&config).unwrap();
-        println!("{:?}", config_str);
+        println!("{}", config_str);
+    }
+
+    #[test]
+    fn test_scripts_to_string() {
+        let config = PackageSet {
+            path: PathBuf::default(),
+            name: "lux".to_string(),
+            description: None,
+            optional: false,
+            env_file: Some("sample.env".to_string()),
+            actions: PackageSetActions::Scripts {
+                scripts: vec![
+                    (InstallActionKind::Install, "install-lux".to_string()),
+                    (InstallActionKind::Uninstall, "uninstall-lux".to_string()),
+                ]
+                .iter()
+                .cloned()
+                .collect(),
+            },
+            link_files: vec![("set-lux".to_string(), "{{local-bin}}/set-lux".to_string())]
+                .iter()
+                .cloned()
+                .collect::<HashMap<String, String>>(),
+            run_before: None,
+            run_after: None,
+        };
+        let config_str = serde_yaml::to_string(&config).unwrap();
+        println!("{}", config_str);
     }
 }

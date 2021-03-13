@@ -5,13 +5,13 @@
   - [The Tool](./introduction/tool.md)
   - [The Library](./introduction/library.md)
 
-- [Packages, Sets, and Groups](./repository/index.md)
+- [The Package Set Repository](./repository/index.md)
   - [Packages](./repository/packages.md)
   - [Packages Sets](./repository/package-sets.md)
   - [Package Set Groups](./repository/package-set-groups.md)
 
-- [Installers](./installers/index.md)
-  - [Script Environments](./installers/scripts.md)
+- [The Installer Registry](./installers/index.md)
+  - [Scripts](./installers/scripts.md)
 
 - [The mcfg Tool](./tool/index.md)
   - [Using Existing Actions](./tool/existing.md)
