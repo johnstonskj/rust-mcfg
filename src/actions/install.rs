@@ -11,6 +11,7 @@ use crate::actions::Action;
 use crate::error::Result;
 use crate::shared::installer::{InstallActionKind, InstallerRegistry};
 use crate::shared::packages::PackageRepository;
+use crate::shared::FileSystemResource;
 
 // ------------------------------------------------------------------------------------------------
 // Public Types

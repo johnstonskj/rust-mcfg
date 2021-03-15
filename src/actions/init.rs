@@ -10,7 +10,7 @@ More detailed description, with
 use crate::actions::Action;
 use crate::error::Result;
 use crate::shared::install_log::PackageLog;
-use crate::shared::{InstallerRegistry, PackageRepository};
+use crate::shared::{FileSystemResource, InstallerRegistry, PackageRepository};
 use git2::Repository;
 use std::path::PathBuf;
 

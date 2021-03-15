@@ -53,6 +53,12 @@ error_chain! {
             description("Command string for install action failed to run")
             display("Command string for install action failed to run")
         }
+
+        #[doc("Invalid builder state")]
+        InvalidBuilderState {
+            description("Invalid builder state")
+            display("Invalid builder state")
+        }
     }
 
     foreign_links {

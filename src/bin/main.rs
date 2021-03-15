@@ -1,6 +1,6 @@
 use mcfg::actions::*;
 use mcfg::error::Result;
-use mcfg::shared::{InstallerRegistry, PackageRepository};
+use mcfg::shared::{FileSystemResource, InstallerRegistry, PackageRepository};
 use mcfg::APP_NAME;
 use std::error::Error;
 use structopt::StructOpt;

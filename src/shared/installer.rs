@@ -11,11 +11,10 @@ use crate::error::{ErrorKind, Result};
 use crate::shared::command::Tokens;
 use crate::shared::install_log::{InstalledPackage, PackageLog};
 use crate::shared::packages::{Package, PackageRepository, PackageSet, PackageSetGroup};
-use crate::shared::{PackageKind, Platform};
+use crate::shared::{FileSystemResource, PackageKind, Platform};
 use crate::APP_NAME;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::env::current_dir;
 use std::fmt::{Display, Formatter};
 use std::fs::read_to_string;
 use std::path::PathBuf;
@@ -174,24 +173,8 @@ impl Into<Vec<Installer>> for InstallerRegistry {
     }
 }
 
-impl InstallerRegistry {
-    pub fn default_path() -> PathBuf {
-        xdirs::config_dir_for(APP_NAME).unwrap().join(REGISTRY_FILE)
-    }
-
-    pub fn open() -> Result<Self> {
-        Self::actual_open(Self::default_path())
-    }
-
-    pub fn open_from(config_root: PathBuf) -> Result<Self> {
-        let base = current_dir().unwrap();
-        Self::actual_open(base.join(config_root))
-    }
-
-    fn actual_open(registry_file: PathBuf) -> Result<Self> {
-        info!("InstallerRegistry::read loading from {:?}", registry_file);
-        let registry_data = read_to_string(registry_file)?;
-        let installers: Vec<Installer> = serde_yaml::from_str(&registry_data)?;
+impl From<Vec<Installer>> for InstallerRegistry {
+    fn from(installers: Vec<Installer>) -> Self {
         let mut registry = Self {
             installers: Default::default(),
         };
@@ -204,18 +187,34 @@ impl InstallerRegistry {
                     .unwrap_or(Platform::Macos),
                 installer.kind.clone(),
             );
-            debug!(
-                "InstallerRegistry::read: Read config for installer {:?}",
-                key
-            );
+            debug!("InstallerRegistry::from: config for installer {:?}", key);
             let result = registry.installers.insert(key, installer);
             if result.is_some() {
                 debug!(
-                    "InstallerRegistry::read: key is a duplicate, previous value was overwritten"
+                    "InstallerRegistry::from: key is a duplicate, previous value was overwritten"
                 );
             }
         }
-        Ok(registry)
+        registry
+    }
+}
+
+impl FileSystemResource for InstallerRegistry {
+    fn default_path() -> PathBuf {
+        xdirs::config_dir_for(APP_NAME).unwrap().join(REGISTRY_FILE)
+    }
+
+    fn actual_open(registry_file: PathBuf) -> Result<Self> {
+        info!("InstallerRegistry::read loading from {:?}", registry_file);
+        let registry_data = read_to_string(registry_file)?;
+        let installers: Vec<Installer> = serde_yaml::from_str(&registry_data)?;
+        Ok(Self::from(installers))
+    }
+}
+
+impl InstallerRegistry {
+    pub fn is_empty(&self) -> bool {
+        self.installers.is_empty()
     }
 
     pub fn installers(&self) -> impl Iterator<Item = &Installer> {
@@ -366,7 +365,7 @@ impl InstallerRegistry {
         }
 
         trace!("executing all env-file actions");
-        if let Some(original) = package_set.env_file() {
+        if let Some(original) = package_set.env_file_path() {
             let link = package_set
                 .path()
                 .parent()
@@ -385,7 +384,7 @@ impl InstallerRegistry {
         }
 
         trace!("executing all link-file actions");
-        for (link, original) in package_set.link_files() {
+        for (link, original) in package_set.link_file_paths() {
             match action {
                 InstallActionKind::Install => {
                     self.link_file(&link, &original)?;
@@ -497,51 +496,130 @@ fn execute_shell_command(
     Ok(())
 }
 
-// ------------------------------------------------------------------------------------------------
-// Unit Tests
-// ------------------------------------------------------------------------------------------------
+pub mod builders {
+    use crate::shared::{Installer, InstallerCommandKind, PackageKind, Platform};
+    use std::collections::HashMap;
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+    // ------------------------------------------------------------------------------------------------
+    // Public Types
+    // ------------------------------------------------------------------------------------------------
 
-    #[test]
-    fn test_parse() {
-        let config_str = r##"
-        - name: homebrew
-          platform: macos
-          kind: default
-          commands:
-            install: "brew install {{package}}"
-            update: "brew update {{package}}"
-"##;
-        let configs: Vec<Installer> = serde_yaml::from_str(config_str).unwrap();
-        println!("{:?}", configs);
+    #[derive(Clone, Debug)]
+    pub struct InstallerBuilder(Installer);
+
+    // ------------------------------------------------------------------------------------------------
+    // Private Types
+    // ------------------------------------------------------------------------------------------------
+
+    // ------------------------------------------------------------------------------------------------
+    // Public Functions
+    // ------------------------------------------------------------------------------------------------
+
+    // ------------------------------------------------------------------------------------------------
+    // Implementations
+    // ------------------------------------------------------------------------------------------------
+
+    impl From<Installer> for InstallerBuilder {
+        fn from(installer: Installer) -> Self {
+            Self(installer)
+        }
     }
 
-    #[test]
-    fn test_write() {
-        let configs = vec![Installer {
-            name: "homebrew".to_string(),
-            platform: Some(Platform::Macos),
-            kind: PackageKind::Default,
-            commands: vec![
-                (
-                    InstallerCommandKind::Install,
-                    "brew install {{package}}".to_string(),
-                ),
-                (
-                    InstallerCommandKind::Update,
-                    "brew update {{package}}".to_string(),
-                ),
-                (InstallerCommandKind::UpdateSelf, "brew upgrade".to_string()),
-            ]
-            .iter()
-            .cloned()
-            .collect::<HashMap<InstallerCommandKind, String>>(),
-        }];
-
-        let config_str = serde_yaml::to_string(&configs).unwrap();
-        println!("{:?}", config_str);
+    impl From<InstallerBuilder> for Installer {
+        fn from(builder: InstallerBuilder) -> Self {
+            builder.0
+        }
     }
+
+    impl InstallerBuilder {
+        pub fn named(name: &str) -> Self {
+            Self(Installer {
+                name: name.to_string(),
+                platform: None,
+                kind: Default::default(),
+                commands: Default::default(),
+            })
+        }
+
+        pub fn for_platform(&mut self, platform: Platform) -> &mut Self {
+            self.0.platform = Some(platform);
+            self
+        }
+
+        pub fn for_macos_only(&mut self) -> &mut Self {
+            self.for_platform(Platform::Macos)
+        }
+
+        pub fn for_linux_only(&mut self) -> &mut Self {
+            self.for_platform(Platform::Macos)
+        }
+
+        pub fn for_any_platform(&mut self) -> &mut Self {
+            self.0.platform = None;
+            self
+        }
+
+        pub fn of_kind(&mut self, kind: PackageKind) -> &mut Self {
+            self.0.kind = kind;
+            self
+        }
+
+        pub fn for_default_packages(&mut self) -> &mut Self {
+            self.of_kind(PackageKind::Default)
+        }
+
+        pub fn for_application_packages(&mut self) -> &mut Self {
+            self.of_kind(PackageKind::Application)
+        }
+
+        pub fn for_language_packages(&mut self, language: &str) -> &mut Self {
+            self.of_kind(PackageKind::Language(language.to_string()))
+        }
+
+        pub fn commands_list(&mut self, commands: &[(InstallerCommandKind, String)]) -> &mut Self {
+            self.commands(commands.into_iter().cloned().collect())
+        }
+
+        pub fn commands(&mut self, commands: HashMap<InstallerCommandKind, String>) -> &mut Self {
+            self.0.commands = commands;
+            self
+        }
+
+        pub fn add_command(
+            &mut self,
+            kind: InstallerCommandKind,
+            script_string: &str,
+        ) -> &mut Self {
+            let _ = self.0.commands.insert(kind, script_string.to_string());
+            self
+        }
+
+        pub fn add_install_command(&mut self, script_string: &str) -> &mut Self {
+            self.add_command(InstallerCommandKind::Install, script_string)
+        }
+
+        pub fn add_update_command(&mut self, script_string: &str) -> &mut Self {
+            self.add_command(InstallerCommandKind::Update, script_string)
+        }
+
+        pub fn add_uninstall_command(&mut self, script_string: &str) -> &mut Self {
+            self.add_command(InstallerCommandKind::Uninstall, script_string)
+        }
+
+        pub fn add_update_self_command(&mut self, script_string: &str) -> &mut Self {
+            self.add_command(InstallerCommandKind::UpdateSelf, script_string)
+        }
+
+        pub fn installer(&self) -> Installer {
+            self.0.clone()
+        }
+    }
+
+    // ------------------------------------------------------------------------------------------------
+    // Private Functions
+    // ------------------------------------------------------------------------------------------------
+
+    // ------------------------------------------------------------------------------------------------
+    // Modules
+    // ------------------------------------------------------------------------------------------------
 }

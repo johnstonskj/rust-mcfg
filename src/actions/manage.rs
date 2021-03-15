@@ -10,7 +10,7 @@ More detailed description, with
 use crate::actions::Action;
 use crate::error::Result;
 use crate::shared::editor::run_editor;
-use crate::shared::PackageRepository;
+use crate::shared::{FileSystemResource, PackageRepository};
 use std::fs::{create_dir_all, write};
 use std::path::PathBuf;
 

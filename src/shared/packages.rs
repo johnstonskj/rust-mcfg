@@ -8,14 +8,14 @@ More detailed description, with
 */
 
 use crate::error::Result;
-use crate::shared::{InstallActionKind, PackageKind, Platform};
+use crate::shared::{FileSystemResource, InstallActionKind, PackageKind, Platform};
 use crate::APP_NAME;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::env::current_dir;
 use std::ffi::OsStr;
 use std::fs::read_dir;
+use std::io::Write;
 use std::path::PathBuf;
 
 // ------------------------------------------------------------------------------------------------
@@ -82,6 +82,19 @@ pub struct PackageRepository {
 
 pub const REPOSITORY_DIR: &str = "repository";
 
+pub trait Readable {
+    fn read(path: &PathBuf) -> Result<Self>
+    where
+        Self: Sized;
+}
+
+pub trait Writeable<W: Write>: Serialize {
+    fn write(&self, w: &mut W) -> Result<()> {
+        serde_yaml::to_writer(w, self)?;
+        Ok(())
+    }
+}
+
 // ------------------------------------------------------------------------------------------------
 // Private Types
 // ------------------------------------------------------------------------------------------------
@@ -119,7 +132,17 @@ impl PackageSetActions {
 
 // ------------------------------------------------------------------------------------------------
 
+impl<W: Write> Writeable<W> for Package {}
+
 impl Package {
+    pub fn new(name: String, platform: Option<Platform>, kind: PackageKind) -> Self {
+        Self {
+            name,
+            platform,
+            kind,
+        }
+    }
+
     pub fn name(&self) -> &String {
         &self.name
     }
@@ -139,6 +162,19 @@ impl Package {
 
 // ------------------------------------------------------------------------------------------------
 
+impl Readable for PackageSet {
+    fn read(path: &PathBuf) -> Result<Self> {
+        debug!("PackageSet::read: reading package set file {:?}", path);
+        let value = std::fs::read_to_string(path)?;
+        let mut result: PackageSet = serde_yaml::from_str(&value)?;
+        result.path = path.clone();
+        trace!("read package_set: {:?}", result);
+        Ok(result)
+    }
+}
+
+impl<W: Write> Writeable<W> for PackageSet {}
+
 impl PackageSet {
     pub fn name(&self) -> &String {
         &self.name
@@ -152,10 +188,39 @@ impl PackageSet {
         &self.description
     }
 
+    pub fn is_optional(&self) -> bool {
+        self.optional
+    }
+
+    pub fn has_actions(&self) -> bool {
+        !match &self.actions {
+            PackageSetActions::Packages { packages } => packages.is_empty(),
+            PackageSetActions::Scripts { scripts } => scripts.is_empty(),
+        }
+    }
+
+    pub fn actions(&self) -> &PackageSetActions {
+        &self.actions
+    }
+
+    pub fn has_package_actions(&self) -> bool {
+        match &self.actions {
+            PackageSetActions::Packages { .. } => true,
+            PackageSetActions::Scripts { .. } => false,
+        }
+    }
+
     pub fn packages(&self) -> Option<impl Iterator<Item = &Package>> {
         match &self.actions {
             PackageSetActions::Packages { packages } => Some(packages.iter()),
             PackageSetActions::Scripts { .. } => None,
+        }
+    }
+
+    pub fn has_script_actions(&self) -> bool {
+        match &self.actions {
+            PackageSetActions::Packages { .. } => false,
+            PackageSetActions::Scripts { .. } => true,
         }
     }
 
@@ -166,11 +231,19 @@ impl PackageSet {
         }
     }
 
-    pub fn env_file(&self) -> Option<PathBuf> {
+    pub fn env_file(&self) -> &Option<String> {
+        &self.env_file
+    }
+
+    pub fn env_file_path(&self) -> Option<PathBuf> {
         self.env_file.as_ref().map(|f| PathBuf::from(f))
     }
 
-    pub fn link_files(&self) -> Vec<(PathBuf, PathBuf)> {
+    pub fn link_files(&self) -> &HashMap<String, String> {
+        &self.link_files
+    }
+
+    pub fn link_file_paths(&self) -> Vec<(PathBuf, PathBuf)> {
         self.link_files
             .iter()
             .map(|(src, tgt)| (self.path.join(src), PathBuf::from(tgt)))
@@ -184,15 +257,6 @@ impl PackageSet {
     pub fn run_after(&self) -> &Option<String> {
         &self.run_after
     }
-
-    pub fn read(path: &PathBuf) -> Result<Self> {
-        debug!("PackageSet::read: reading package set file {:?}", path);
-        let value = std::fs::read_to_string(path)?;
-        let mut result: PackageSet = serde_yaml::from_str(&value)?;
-        result.path = path.clone();
-        trace!("read package_set: {:?}", result);
-        Ok(result)
-    }
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -201,28 +265,8 @@ lazy_static! {
     static ref PSG_NAME: Regex = Regex::new(r#"^([0-9]+\-)?(.*)$"#).unwrap();
 }
 
-impl PackageSetGroup {
-    pub fn name(&self) -> &String {
-        &self.name
-    }
-
-    pub fn path(&self) -> &PathBuf {
-        &self.path
-    }
-
-    pub fn package_sets(&self) -> impl Iterator<Item = &PackageSet> {
-        self.package_sets.iter()
-    }
-
-    pub fn has_package_set(&self, name: &str) -> bool {
-        self.package_set(name).is_some()
-    }
-
-    pub fn package_set(&self, name: &str) -> Option<&PackageSet> {
-        self.package_sets.iter().find(|ps| ps.name == name)
-    }
-
-    pub fn read(path: &PathBuf) -> Result<Self> {
+impl Readable for PackageSetGroup {
+    fn read(path: &PathBuf) -> Result<Self> {
         debug!("PackageSetGroup::read: reading dir {:?}", path);
         let name = path.file_name().unwrap().to_string_lossy().to_string();
         let captures = PSG_NAME.captures(&name);
@@ -261,34 +305,39 @@ impl PackageSetGroup {
     }
 }
 
+impl PackageSetGroup {
+    pub fn name(&self) -> &String {
+        &self.name
+    }
+
+    pub fn path(&self) -> &PathBuf {
+        &self.path
+    }
+
+    pub fn package_sets(&self) -> impl Iterator<Item = &PackageSet> {
+        self.package_sets.iter()
+    }
+
+    pub fn has_package_set(&self, name: &str) -> bool {
+        self.package_set(name).is_some()
+    }
+
+    pub fn package_set(&self, name: &str) -> Option<&PackageSet> {
+        self.package_sets.iter().find(|ps| ps.name == name)
+    }
+}
+
 // ------------------------------------------------------------------------------------------------
 
 lazy_static! {
     static ref RESERVED_REPO_NAMES: Vec<&'static str> = vec![".git", ".config", ".local"];
 }
 
-impl PackageRepository {
-    pub fn default_path() -> PathBuf {
+impl FileSystemResource for PackageRepository {
+    fn default_path() -> PathBuf {
         xdirs::config_dir_for(APP_NAME)
             .unwrap()
             .join(REPOSITORY_DIR)
-    }
-
-    pub fn default_config_path() -> PathBuf {
-        Self::default_path().join(".config")
-    }
-
-    pub fn default_local_path() -> PathBuf {
-        Self::default_path().join(".local")
-    }
-
-    pub fn open() -> Result<Self> {
-        Self::actual_open(Self::default_path())
-    }
-
-    pub fn open_from(repository_root: PathBuf) -> Result<Self> {
-        let base = current_dir().unwrap();
-        Self::actual_open(base.join(repository_root))
     }
 
     fn actual_open(repository_path: PathBuf) -> Result<Self> {
@@ -322,6 +371,16 @@ impl PackageRepository {
             package_set_groups,
         })
     }
+}
+
+impl PackageRepository {
+    pub fn default_config_path() -> PathBuf {
+        Self::default_path().join(".config")
+    }
+
+    pub fn default_local_path() -> PathBuf {
+        Self::default_path().join(".local")
+    }
 
     pub fn path(&self) -> &PathBuf {
         &self.path
@@ -352,104 +411,298 @@ fn is_default<T: Default + PartialEq>(t: &T) -> bool {
     t == &T::default()
 }
 
-// ------------------------------------------------------------------------------------------------
-// Modules
-// ------------------------------------------------------------------------------------------------
+pub mod builders {
+    use crate::error::{ErrorKind, Result};
+    use crate::shared::packages::PackageSetActions;
+    use crate::shared::{
+        InstallActionKind, Package, PackageKind, PackageSet, PackageSetGroup, Platform,
+    };
+    use std::collections::HashMap;
+    use std::path::PathBuf;
 
-// ------------------------------------------------------------------------------------------------
-// Unit Tests
-// ------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------------------------------------
+    // Public Types
+    // ------------------------------------------------------------------------------------------------
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+    #[derive(Clone, Debug)]
+    pub struct PackageBuilder(Package);
 
-    #[test]
-    fn test_parse_packages() {
-        let config_str = r##"
-        name: lux
-        env-file: sample.env
-        actions:
-          packages:
-            - name: lux
-              kind: 
-                language: python
-        link-files:
-          set-lux: "{{local-bin}}/set-lux"
-        "##;
+    #[derive(Clone, Debug)]
+    pub struct PackageSetBuilder(PackageSet);
 
-        let config: PackageSet = serde_yaml::from_str(config_str).unwrap();
-        println!("{:?}", config);
+    #[derive(Clone, Debug)]
+    pub struct PackageSetGroupBuilder(PackageSetGroup);
+
+    // ------------------------------------------------------------------------------------------------
+    // Private Types
+    // ------------------------------------------------------------------------------------------------
+
+    // ------------------------------------------------------------------------------------------------
+    // Public Functions
+    // ------------------------------------------------------------------------------------------------
+
+    // ------------------------------------------------------------------------------------------------
+    // Implementations
+    // ------------------------------------------------------------------------------------------------
+
+    impl From<Package> for PackageBuilder {
+        fn from(package: Package) -> Self {
+            Self(package)
+        }
     }
 
-    #[test]
-    fn test_parse_scripts() {
-        let config_str = r##"
-        name: lux
-        env-file: sample.env
-        actions:
-          scripts:
-            install: install-lux
-            uninstall: uninstall-lux 
-        link-files:
-          set-lux: "{{local-bin}}/set-lux"
-        "##;
-
-        let config: PackageSet = serde_yaml::from_str(config_str).unwrap();
-        println!("{:?}", config);
+    impl From<PackageBuilder> for Package {
+        fn from(builder: PackageBuilder) -> Self {
+            builder.0
+        }
     }
 
-    #[test]
-    fn test_packages_to_string() {
-        let config = PackageSet {
-            path: PathBuf::default(),
-            name: "lux".to_string(),
-            description: None,
-            optional: false,
-            env_file: Some("sample.env".to_string()),
-            actions: PackageSetActions::Packages {
-                packages: vec![Package {
-                    name: "lux".to_string(),
-                    platform: None,
-                    kind: PackageKind::Language("python".to_string()),
-                }],
-            },
-            link_files: vec![("set-lux".to_string(), "{{local-bin}}/set-lux".to_string())]
-                .iter()
-                .cloned()
-                .collect::<HashMap<String, String>>(),
-            run_before: None,
-            run_after: None,
-        };
-        let config_str = serde_yaml::to_string(&config).unwrap();
-        println!("{}", config_str);
+    impl PackageBuilder {
+        pub fn named(name: &str) -> Self {
+            Self(Package {
+                name: name.to_string(),
+                platform: None,
+                kind: Default::default(),
+            })
+        }
+
+        pub fn for_platform(&mut self, platform: Platform) -> &mut Self {
+            self.0.platform = Some(platform);
+            self
+        }
+
+        pub fn for_macos_only(&mut self) -> &mut Self {
+            self.for_platform(Platform::Macos)
+        }
+
+        pub fn for_linux_only(&mut self) -> &mut Self {
+            self.for_platform(Platform::Macos)
+        }
+
+        pub fn for_any_platform(&mut self) -> &mut Self {
+            self.0.platform = None;
+            self
+        }
+
+        pub fn of_kind(&mut self, kind: PackageKind) -> &mut Self {
+            self.0.kind = kind;
+            self
+        }
+
+        pub fn using_default_installer(&mut self) -> &mut Self {
+            self.of_kind(PackageKind::Default)
+        }
+
+        pub fn using_application_installer(&mut self) -> &mut Self {
+            self.of_kind(PackageKind::Application)
+        }
+
+        pub fn using_language_installer(&mut self, language: &str) -> &mut Self {
+            self.of_kind(PackageKind::Language(language.to_string()))
+        }
+
+        pub fn build(&self) -> Package {
+            self.0.clone()
+        }
     }
 
-    #[test]
-    fn test_scripts_to_string() {
-        let config = PackageSet {
-            path: PathBuf::default(),
-            name: "lux".to_string(),
-            description: None,
-            optional: false,
-            env_file: Some("sample.env".to_string()),
-            actions: PackageSetActions::Scripts {
-                scripts: vec![
-                    (InstallActionKind::Install, "install-lux".to_string()),
-                    (InstallActionKind::Uninstall, "uninstall-lux".to_string()),
-                ]
-                .iter()
-                .cloned()
-                .collect(),
-            },
-            link_files: vec![("set-lux".to_string(), "{{local-bin}}/set-lux".to_string())]
-                .iter()
-                .cloned()
-                .collect::<HashMap<String, String>>(),
-            run_before: None,
-            run_after: None,
-        };
-        let config_str = serde_yaml::to_string(&config).unwrap();
-        println!("{}", config_str);
+    // ------------------------------------------------------------------------------------------------
+
+    impl From<PackageSet> for PackageSetBuilder {
+        fn from(package: PackageSet) -> Self {
+            Self(package)
+        }
     }
+
+    impl From<PackageSetBuilder> for PackageSet {
+        fn from(builder: PackageSetBuilder) -> Self {
+            builder.0
+        }
+    }
+
+    impl PackageSetBuilder {
+        pub fn named(name: &str) -> Self {
+            Self(PackageSet {
+                path: Default::default(),
+                name: name.to_string(),
+                description: None,
+                optional: false,
+                run_before: None,
+                actions: Default::default(),
+                env_file: None,
+                link_files: Default::default(),
+                run_after: None,
+            })
+        }
+
+        pub fn path(&mut self, path: PathBuf) -> &mut Self {
+            self.0.path = path;
+            self
+        }
+
+        pub fn description(&mut self, description: &str) -> &mut Self {
+            self.0.description = Some(description.to_string());
+            self
+        }
+
+        pub fn optional(&mut self) -> &mut Self {
+            self.0.optional = true;
+            self
+        }
+
+        pub fn required(&mut self) -> &mut Self {
+            self.0.optional = false;
+            self
+        }
+
+        pub fn run_before(&mut self, script_string: &str) -> &mut Self {
+            self.0.run_before = Some(script_string.to_string());
+            self
+        }
+
+        pub fn actions(&mut self, actions: PackageSetActions) -> &mut Self {
+            self.0.actions = actions;
+            self
+        }
+
+        pub fn with_package_actions(&mut self) -> &mut Self {
+            self.actions(PackageSetActions::Packages {
+                packages: Default::default(),
+            })
+        }
+
+        pub fn package_actions(&mut self, packages: &[Package]) -> &mut Self {
+            self.actions(PackageSetActions::Packages {
+                packages: packages.to_vec(),
+            })
+        }
+
+        pub fn add_package_action(&mut self, package: Package) -> Result<&mut Self> {
+            match &mut self.0.actions {
+                PackageSetActions::Packages { packages } => {
+                    packages.push(package);
+                    Ok(self)
+                }
+                PackageSetActions::Scripts { .. } => Err(ErrorKind::InvalidBuilderState.into()),
+            }
+        }
+
+        pub fn with_script_actions(&mut self) -> &mut Self {
+            self.actions(PackageSetActions::Scripts {
+                scripts: Default::default(),
+            })
+        }
+
+        pub fn script_actions_list(
+            &mut self,
+            scripts: &[(InstallActionKind, String)],
+        ) -> &mut Self {
+            self.script_actions(scripts.into_iter().cloned().collect())
+        }
+
+        pub fn script_actions(&mut self, scripts: HashMap<InstallActionKind, String>) -> &mut Self {
+            self.actions(PackageSetActions::Scripts { scripts })
+        }
+
+        pub fn add_script_action(
+            &mut self,
+            kind: InstallActionKind,
+            script_string: &str,
+        ) -> Result<&mut Self> {
+            match &mut self.0.actions {
+                PackageSetActions::Packages { .. } => Err(ErrorKind::InvalidBuilderState.into()),
+                PackageSetActions::Scripts { scripts } => {
+                    let _ = scripts.insert(kind, script_string.to_string());
+                    Ok(self)
+                }
+            }
+        }
+
+        pub fn add_install_script_action(&mut self, script_string: &str) -> Result<&mut Self> {
+            self.add_script_action(InstallActionKind::Install, script_string)
+        }
+
+        pub fn add_update_script_action(&mut self, script_string: &str) -> Result<&mut Self> {
+            self.add_script_action(InstallActionKind::Update, script_string)
+        }
+
+        pub fn add_uninstall_script_action(&mut self, script_string: &str) -> Result<&mut Self> {
+            self.add_script_action(InstallActionKind::Uninstall, script_string)
+        }
+
+        pub fn add_link_files_script_action(&mut self, script_string: &str) -> Result<&mut Self> {
+            self.add_script_action(InstallActionKind::LinkFiles, script_string)
+        }
+
+        pub fn env_file(&mut self, file_name: &str) -> &mut Self {
+            self.0.env_file = Some(file_name.to_string());
+            self
+        }
+
+        pub fn link_files(&mut self, link_files: HashMap<String, String>) -> &mut Self {
+            self.0.link_files = link_files;
+            self
+        }
+
+        pub fn add_link_file(&mut self, repo_file_name: &str, local_fs_name: &str) -> &mut Self {
+            let _ = self
+                .0
+                .link_files
+                .insert(repo_file_name.to_string(), local_fs_name.to_string());
+            self
+        }
+
+        pub fn run_after(&mut self, script_string: &str) -> &mut Self {
+            self.0.run_after = Some(script_string.to_string());
+            self
+        }
+
+        pub fn build(&mut self) -> PackageSet {
+            self.0.clone()
+        }
+    }
+    // ------------------------------------------------------------------------------------------------
+
+    impl From<PackageSetGroup> for PackageSetGroupBuilder {
+        fn from(package: PackageSetGroup) -> Self {
+            Self(package)
+        }
+    }
+
+    impl From<PackageSetGroupBuilder> for PackageSetGroup {
+        fn from(builder: PackageSetGroupBuilder) -> Self {
+            builder.0
+        }
+    }
+
+    impl PackageSetGroupBuilder {
+        pub fn named(name: &str) -> Self {
+            Self(PackageSetGroup {
+                path: Default::default(),
+                name: name.to_string(),
+                package_sets: vec![],
+            })
+        }
+
+        pub fn path(&mut self, path: PathBuf) -> &mut Self {
+            self.0.path = path;
+            self
+        }
+
+        pub fn package_sets(&mut self, package_sets: &[PackageSet]) {
+            self.0.package_sets = package_sets.to_vec()
+        }
+
+        pub fn add_package_set(&mut self, package_set: PackageSet) {
+            self.0.package_sets.push(package_set)
+        }
+    }
+
+    // ------------------------------------------------------------------------------------------------
+    // Private Functions
+    // ------------------------------------------------------------------------------------------------
+
+    // ------------------------------------------------------------------------------------------------
+    // Modules
+    // ------------------------------------------------------------------------------------------------
 }

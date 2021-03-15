@@ -10,7 +10,7 @@ More detailed description, with
 use crate::actions::Action;
 use crate::error::Result;
 use crate::shared::installer::InstallerRegistry;
-use crate::shared::{PackageLog, PackageRepository};
+use crate::shared::{FileSystemResource, PackageLog, PackageRepository};
 
 // ------------------------------------------------------------------------------------------------
 // Public Types

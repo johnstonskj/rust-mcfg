@@ -2,8 +2,11 @@
 Common modules used by the actions defined in [`crate::actions`](../actions/index.html).
 */
 
+use crate::error::Result;
 use serde::{Deserialize, Serialize};
+use std::env::current_dir;
 use std::fmt::{Display, Formatter};
+use std::path::PathBuf;
 
 // ------------------------------------------------------------------------------------------------
 // Public Types
@@ -22,7 +25,29 @@ pub enum PackageKind {
     Application,
     Default,
     Language(String),
-    Script(String),
+}
+
+pub trait FileSystemResource {
+    fn default_path() -> PathBuf;
+
+    fn open() -> Result<Self>
+    where
+        Self: Sized,
+    {
+        Self::actual_open(Self::default_path())
+    }
+
+    fn open_from(non_default_path: PathBuf) -> Result<Self>
+    where
+        Self: Sized,
+    {
+        let base = current_dir().unwrap();
+        Self::actual_open(base.join(non_default_path))
+    }
+
+    fn actual_open(actual_path: PathBuf) -> Result<Self>
+    where
+        Self: Sized;
 }
 
 // ------------------------------------------------------------------------------------------------

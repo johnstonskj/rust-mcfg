@@ -10,6 +10,7 @@ More detailed description, with
 use crate::actions::Action;
 use crate::error::Result;
 use crate::shared::install_log::PackageLog;
+use crate::shared::FileSystemResource;
 use prettytable::Table;
 
 // ------------------------------------------------------------------------------------------------

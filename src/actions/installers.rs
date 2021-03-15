@@ -11,6 +11,7 @@ use crate::actions::Action;
 use crate::error::Result;
 use crate::shared::editor::run_editor;
 use crate::shared::installer::InstallerRegistry;
+use crate::shared::FileSystemResource;
 
 // ------------------------------------------------------------------------------------------------
 // Public Types

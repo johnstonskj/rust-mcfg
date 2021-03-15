@@ -9,7 +9,7 @@ More detailed description, with
 
 use crate::actions::Action;
 use crate::error::Result;
-use crate::shared::PackageRepository;
+use crate::shared::{FileSystemResource, PackageRepository};
 use git2::{ErrorClass, ErrorCode, Repository};
 
 // ------------------------------------------------------------------------------------------------

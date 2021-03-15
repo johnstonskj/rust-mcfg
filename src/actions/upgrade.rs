@@ -10,6 +10,7 @@ More detailed description, with
 use crate::actions::Action;
 use crate::error::Result;
 use crate::shared::installer::InstallerRegistry;
+use crate::shared::FileSystemResource;
 
 // ------------------------------------------------------------------------------------------------
 // Public Types
