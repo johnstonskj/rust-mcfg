@@ -8,9 +8,11 @@ More detailed description, with
 */
 
 use crate::error::{ErrorKind, Result};
+use crate::shared::PackageRepository;
 use log::LevelFilter;
 use regex::Regex;
 use std::collections::HashMap;
+use std::env::var;
 use std::fmt::Display;
 use std::fmt::Formatter;
 use std::process::Command;
@@ -165,14 +167,25 @@ impl Tokens {
                 Token::plain(&self.to_string()),
             ];
         }
-
         trace!("variable replacements: {:?}", variable_replacements);
 
         // turn command variables into environment variables
-        let env_vars: HashMap<String, String> = variable_replacements
+        let mut env_vars: HashMap<String, String> = variable_replacements
             .iter()
             .map(|(k, v)| (format!("MCFG_{}", k.to_uppercase()), v.clone()))
             .collect();
+
+        // add to the system path
+        if let Ok(current_path) = var("PATH") {
+            let _ = env_vars.insert(
+                "PATH".to_string(),
+                format!(
+                    "{}:{:?}/bin",
+                    current_path,
+                    PackageRepository::default_local_path()
+                ),
+            );
+        }
         trace!("environment variables: {:?}", env_vars);
 
         let mut token_iter = self.tokens();
@@ -181,7 +194,7 @@ impl Tokens {
         let command = command
             .envs(env_vars)
             .args(token_iter.map(|t| t.value.to_string()));
-        trace!("command: {:?}", &command);
+        trace!("executing Command: {:?}", &command);
 
         let out = command.output()?;
 
