@@ -9,7 +9,9 @@ More detailed description, with
 
 use crate::error::{ErrorKind, Result};
 use crate::shared::command::ShellCommand;
-use crate::shared::env::{action_vars, package_set_action_vars};
+use crate::shared::env::{
+    add_action_vars, add_package_action_vars, add_package_set_action_vars, default_vars,
+};
 use crate::shared::install_log::{InstalledPackage, PackageLog};
 use crate::shared::packages::{Package, PackageRepository, PackageSet, PackageSetGroup};
 use crate::shared::{FileSystemResource, PackageKind, Platform};
@@ -263,7 +265,8 @@ impl InstallerRegistry {
                     .commands
                     .get(&InstallerCommandKind::UpdateSelf)
                     .unwrap();
-                let variable_replacements = action_vars(&InstallActionKind::Update);
+                let variable_replacements =
+                    add_action_vars(&InstallActionKind::Update, &default_vars());
                 execute_shell_command(cmd_str, &variable_replacements)?;
             }
         }
@@ -356,7 +359,10 @@ impl InstallerRegistry {
 
         trace!("package-set {:?}", package_set);
 
-        let mut variable_replacements = package_set_action_vars(package_set, action);
+        let mut variable_replacements =
+            add_package_set_action_vars(package_set, &add_action_vars(action, &default_vars()));
+
+        variable_replacements.extend(package_set.more_env_vars().clone());
 
         if let Some(cmd_str) = package_set.run_before() {
             trace!("executing `run_before` script");
@@ -371,8 +377,8 @@ impl InstallerRegistry {
                         return Err(ErrorKind::NoInstallerForKind(package.kind().clone()).into())
                     }
                     Some(installer) => {
-                        let _ = variable_replacements
-                            .insert("package_name".to_string(), package.name().to_string());
+                        let variable_replacements =
+                            add_package_action_vars(package, &variable_replacements);
                         installer.package_action(action, package, &variable_replacements)?;
                         log_db.log_installed_package(&InstalledPackage::new(
                             &package_set_group.name(),

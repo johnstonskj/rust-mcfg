@@ -23,7 +23,7 @@
   commands:
     install: "brew install {{package_name}}"
     uninstall: "brew uninstall {{package_name}}"
-    update-self: "brew update"
+    update-self: "brew update && brew cleanup && brew doctor"
     update: "brew upgrade {{package_name}}"
 
 - name: homebrew apps

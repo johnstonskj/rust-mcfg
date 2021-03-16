@@ -1,0 +1,7 @@
+---
+name: homebrew-services
+platform: macos
+description: macOS homebrew package manager, service integration
+actions:
+  scripts:
+    install: brew tap 'homebrew/services' && brew services

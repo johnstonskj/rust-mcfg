@@ -8,11 +8,11 @@ More detailed description, with
 */
 
 use crate::error::{ErrorKind, Result};
-use crate::shared::PackageRepository;
+use crate::shared::env::{var_string_replace, vars_to_env_vars};
+use crate::APP_NAME;
 use log::LevelFilter;
 use regex::Regex;
 use std::collections::HashMap;
-use std::env::var;
 use std::process::Command;
 
 // ------------------------------------------------------------------------------------------------
@@ -42,7 +42,6 @@ pub struct ShellCommandPlan {
 // ------------------------------------------------------------------------------------------------
 
 lazy_static! {
-    static ref VARIABLES: Regex = Regex::new(r#"(\{\{[a-zA-Z0-9\-_:]+\}\})"#).unwrap();
     static ref UNQUOTED: Regex = Regex::new(r#"((^|[^\\])")"#).unwrap();
 }
 
@@ -51,11 +50,11 @@ impl ShellCommandPlan {
 
     pub fn new(script_string: &str, variables: &HashMap<String, String>) -> Self {
         debug!("ShellCommandPlan::new({:?})", script_string);
-        let safe_script = make_safe(&replace_variables(script_string, variables));
+        let safe_script = make_safe(&var_string_replace(script_string, variables));
 
         let mut command = Command::new(ShellCommand::SHELL_CMD);
         let _ = command
-            .envs(variables_to_environment(variables))
+            .envs(vars_to_env_vars(variables, &APP_NAME.to_uppercase()))
             .args(vec![Self::SHELL_ARG, &safe_script]);
         trace!("ShellCommandPlan::new: command={:?}", command);
         Self { command }
@@ -102,7 +101,7 @@ impl Default for ShellCommand {
 }
 
 impl ShellCommand {
-    pub const SHELL_CMD: &'static str = "bash";
+    pub const SHELL_CMD: &'static str = "/bin/bash";
 
     pub fn new(variables: HashMap<String, String>) -> Self {
         debug!("ShellCommand::new(..)");
@@ -123,46 +122,6 @@ impl ShellCommand {
 // ------------------------------------------------------------------------------------------------
 // Private Functions
 // ------------------------------------------------------------------------------------------------
-
-fn variables_to_environment(variables: &HashMap<String, String>) -> HashMap<String, String> {
-    let mut env_vars: HashMap<String, String> = variables
-        .iter()
-        .map(|(k, v)| (format!("MCFG_{}", k.to_uppercase()), v.clone()))
-        .collect();
-    if let Ok(current_path) = var("PATH") {
-        let _ = env_vars.insert(
-            "PATH".to_string(),
-            format!(
-                "{}:{:?}/bin",
-                current_path,
-                PackageRepository::default_local_path()
-            ),
-        );
-    }
-    env_vars
-}
-
-fn replace_variables(script_string: &str, variables: &HashMap<String, String>) -> String {
-    let mut out_string = String::new();
-
-    let mut from: usize = 0;
-    for capture in VARIABLES.captures_iter(script_string) {
-        let var = capture.get(1).unwrap();
-        out_string.push_str(&script_string[from..var.start()]);
-        let var_name = var.as_str();
-        let var_name = &var_name[2..var_name.len() - 2];
-        if let Some(replacement) = variables.get(var_name) {
-            out_string.push_str(replacement)
-        } else {
-            warn!("No variable named {:?} in replacements", var_name);
-            out_string.push_str(var_name);
-        }
-        from = var.end();
-    }
-    out_string.push_str(&script_string[from..]);
-
-    out_string
-}
 
 fn make_safe(script_string: &str) -> String {
     let mut out_string = String::new();
@@ -194,26 +153,6 @@ fn make_safe(script_string: &str) -> String {
 mod tests {
     use super::*;
     use pretty_assertions::assert_eq;
-
-    #[test]
-    fn test_replace_variables() {
-        let replacements: HashMap<String, String> = vec![("name", "wallace")]
-            .iter()
-            .map(|(k, v)| (k.to_string(), v.to_string()))
-            .collect();
-
-        assert_eq!(replace_variables("{{name}}", &replacements), "wallace");
-
-        assert_eq!(
-            replace_variables("hello {{name}}!", &replacements),
-            "hello wallace!"
-        );
-
-        assert_eq!(
-            replace_variables("{{salutation}} {{name}}!", &replacements),
-            "salutation wallace!"
-        );
-    }
 
     #[test]
     fn test_make_safe() {

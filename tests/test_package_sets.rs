@@ -103,6 +103,48 @@ fn test_package_set_with_scripts() {
 }
 
 #[test]
+fn test_package_set_with_a_lot() {
+    let package_set = PackageSetBuilder::named("gpg")
+        .description("Gnu Privacy Guard")
+        .env_var("gpg_home", "{{home}}/.gnupg")
+        .package_actions(&[
+            PackageBuilder::named("gpg").build(),
+            PackageBuilder::named("pinentry-gnome3")
+                .for_linux_only()
+                .build(),
+            PackageBuilder::named("pinentry-mac")
+                .for_macos_only()
+                .build(),
+        ])
+        .add_link_file("gpg.conf", "{{gpg_home}}/gpg.conf")
+        .add_link_file(
+            "gpg-agent-{{platform_os}}.conf",
+            "{{gpg_home}}/gpg-agent.conf",
+        )
+        .run_after("gpg --list-keys")
+        .build();
+
+    assert_eq!(package_set.name(), &String::from("gpg"));
+    assert_eq!(
+        package_set.description(),
+        &Some("Gnu Privacy Guard".to_string())
+    );
+    assert_eq!(package_set.has_actions(), true);
+    assert_eq!(package_set.packages().unwrap().count(), 3);
+    assert_eq!(package_set.link_files().len(), 2);
+    assert_eq!(
+        package_set.run_after(),
+        &Some("gpg --list-keys".to_string())
+    );
+
+    let package_set_str = serde_yaml::to_string(&package_set).unwrap();
+    println!("{}", package_set_str);
+
+    let new_package_set = serde_yaml::from_str(&package_set_str).unwrap();
+    assert_eq!(package_set, new_package_set);
+}
+
+#[test]
 fn test_parse_package_set_with_packages() {
     let config_str = r##"
         name: lux

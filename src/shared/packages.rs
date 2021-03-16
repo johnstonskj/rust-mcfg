@@ -46,15 +46,19 @@ pub enum PackageSetActions {
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug, PartialEq)]
-#[serde(deny_unknown_fields, rename_all = "kebab-case")]
+#[serde(rename_all = "kebab-case")]
 pub struct PackageSet {
     #[serde(skip)]
     path: PathBuf,
     name: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     description: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    platform: Option<Platform>,
     #[serde(default, skip_serializing_if = "is_default")]
     optional: bool,
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    env_vars: HashMap<String, String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     run_before: Option<String>,
     #[serde(default, skip_serializing_if = "PackageSetActions::is_empty")]
@@ -187,8 +191,20 @@ impl PackageSet {
         &self.description
     }
 
+    pub fn is_platform_match(&self) -> bool {
+        Platform::CURRENT.is_match(&self.platform)
+    }
+
+    pub fn platform(&self) -> Platform {
+        self.platform.as_ref().cloned().unwrap_or_default()
+    }
+
     pub fn is_optional(&self) -> bool {
         self.optional
+    }
+
+    pub fn more_env_vars(&self) -> &HashMap<String, String> {
+        &self.env_vars
     }
 
     pub fn has_actions(&self) -> bool {
@@ -529,7 +545,9 @@ pub mod builders {
                 path: Default::default(),
                 name: name.to_string(),
                 description: None,
+                platform: None,
                 optional: false,
+                env_vars: Default::default(),
                 run_before: None,
                 actions: Default::default(),
                 env_file: None,
@@ -548,6 +566,24 @@ pub mod builders {
             self
         }
 
+        pub fn for_platform(&mut self, platform: Platform) -> &mut Self {
+            self.0.platform = Some(platform);
+            self
+        }
+
+        pub fn for_macos_only(&mut self) -> &mut Self {
+            self.for_platform(Platform::Macos)
+        }
+
+        pub fn for_linux_only(&mut self) -> &mut Self {
+            self.for_platform(Platform::Macos)
+        }
+
+        pub fn for_any_platform(&mut self) -> &mut Self {
+            self.0.platform = None;
+            self
+        }
+
         pub fn optional(&mut self) -> &mut Self {
             self.0.optional = true;
             self
@@ -555,6 +591,16 @@ pub mod builders {
 
         pub fn required(&mut self) -> &mut Self {
             self.0.optional = false;
+            self
+        }
+
+        pub fn env_vars(&mut self, env_vars: HashMap<String, String>) -> &mut Self {
+            self.0.env_vars = env_vars;
+            self
+        }
+
+        pub fn env_var(&mut self, key: &str, value: &str) -> &mut Self {
+            let _ = self.0.env_vars.insert(key.to_string(), value.to_string());
             self
         }
 

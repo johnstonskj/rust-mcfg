@@ -18,5 +18,5 @@ fn test_parse_repository() {
     assert_eq!(repository.is_empty(), false);
     assert_eq!(repository.groups().count(), 1);
     let system_group = repository.group("system").unwrap();
-    assert_eq!(system_group.package_sets().count(), 2);
+    assert_eq!(system_group.package_sets().count(), 4);
 }

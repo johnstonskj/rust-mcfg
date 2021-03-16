@@ -1,6 +1,7 @@
 ---
 name: homebrew
+platform: macos
 description: macOS homebrew package manager
 actions:
   scripts:
-    install: "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    install: "curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh | bash"

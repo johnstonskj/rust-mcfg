@@ -41,6 +41,7 @@ pub struct InitAction {
 const DEFAULT_INSTALLER_REGISTRY: &str = include_str!("default-installers.yml");
 
 const HOMEBREW_PACKAGE_SET: &str = include_str!("macos-homebrew.yml");
+const HOMEBREW_SERVICES_PACKAGE_SET: &str = include_str!("macos-homebrew-services.yml");
 
 impl Action for InitAction {
     fn run(&self) -> Result<()> {
@@ -102,6 +103,13 @@ impl Action for InitAction {
                 &repository_path.join("00-installers/macos-homebrew.yml"),
                 "'00-installers/homebrew' package set",
                 HOMEBREW_PACKAGE_SET,
+            )?;
+
+            init_create_file(
+                &steps,
+                &repository_path.join("00-installers/macos-homebrew-services.yml"),
+                "'00-installers/homebrew-services' package set",
+                HOMEBREW_SERVICES_PACKAGE_SET,
             )?;
 
             init_create_file(

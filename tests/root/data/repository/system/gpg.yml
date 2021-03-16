@@ -1,0 +1,16 @@
+---
+name: gpg
+description: Gnu Privacy Guard
+env-vars:
+  gpg_home: "{{home}}/.gnupg"
+actions:
+  packages:
+    - name: gpg
+    - name: pinentry-gnome3
+      platform: linux
+    - name: pinentry-mac
+      platform: macos
+link-files:
+  gpg.conf: "{{gpg_home}}/gpg.conf"
+  "gpg-agent-{{platform_os}}.conf": "{{gpg_home}}/gpg-agent.conf"
+run-after: gpg --list-keys

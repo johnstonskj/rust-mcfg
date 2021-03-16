@@ -1,0 +1,21 @@
+name: fonts
+description: all those missing fonts!
+actions:
+  packages:
+    - name: homebrew/cask-fonts/font-fira-code
+      platform: macos
+      kind: application
+    - name: homebrew/cask-fonts/font-fira-code-nerd-font
+      platform: macos
+      kind: application
+    - name: font-meslo-lg
+      platform: macos
+      kind: application
+    - name: font-meslo-lg-nerd-font
+      platform: macos
+      kind: application
+    - name: font-linux-libertine
+      platform: macos
+      kind: application
+    - name: fonts-powerline
+      platform: linux
