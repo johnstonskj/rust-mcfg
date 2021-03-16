@@ -1,5 +1,6 @@
 use mcfg::shared::packages::builders::{PackageBuilder, PackageSetBuilder};
-use mcfg::shared::{InstallActionKind, PackageSet};
+use mcfg::shared::PackageSet;
+use pretty_assertions::assert_eq;
 use std::collections::HashMap;
 use std::path::PathBuf;
 
@@ -15,12 +16,17 @@ fn test_minimal_package_set() {
     assert_eq!(package_set.env_file(), &None);
     assert_eq!(package_set.link_files(), &HashMap::default());
     assert_eq!(package_set.run_after(), &None);
+
+    let package_set_str = serde_yaml::to_string(&package_set).unwrap();
+    println!("{}", package_set_str);
+
+    let new_package_set = serde_yaml::from_str(&package_set_str).unwrap();
+    assert_eq!(package_set, new_package_set);
 }
 
 #[test]
 fn test_package_set_with_packages() {
     let package_set = PackageSetBuilder::named("example")
-        .path(PathBuf::from("repo/group/package-set.yml"))
         .description("an example package set, with package actions")
         .optional()
         .run_before("{{local-bin}}/ex-pre-install")
@@ -31,10 +37,6 @@ fn test_package_set_with_packages() {
         .run_after("{{local-bin}}/ex-post-install")
         .build();
     assert_eq!(package_set.name(), &String::from("example"));
-    assert_eq!(
-        package_set.path(),
-        &PathBuf::from("repo/group/package-set.yml")
-    );
     assert_eq!(
         package_set.description(),
         &Some("an example package set, with package actions".to_string())
@@ -52,12 +54,17 @@ fn test_package_set_with_packages() {
         package_set.run_after(),
         &Some("{{local-bin}}/ex-post-install".to_string())
     );
+
+    let package_set_str = serde_yaml::to_string(&package_set).unwrap();
+    println!("{}", package_set_str);
+
+    let new_package_set = serde_yaml::from_str(&package_set_str).unwrap();
+    assert_eq!(package_set, new_package_set);
 }
 
 #[test]
 fn test_package_set_with_scripts() {
     let package_set = PackageSetBuilder::named("example")
-        .path(PathBuf::from("repo/group/package-set.yml"))
         .description("an example package set, with package actions")
         .optional()
         .run_before("{{local-bin}}/ex-pre-install")
@@ -70,10 +77,6 @@ fn test_package_set_with_scripts() {
         .run_after("{{local-bin}}/ex-post-install")
         .build();
     assert_eq!(package_set.name(), &String::from("example"));
-    assert_eq!(
-        package_set.path(),
-        &PathBuf::from("repo/group/package-set.yml")
-    );
     assert_eq!(
         package_set.description(),
         &Some("an example package set, with package actions".to_string())
@@ -91,6 +94,12 @@ fn test_package_set_with_scripts() {
         package_set.run_after(),
         &Some("{{local-bin}}/ex-post-install".to_string())
     );
+
+    let package_set_str = serde_yaml::to_string(&package_set).unwrap();
+    println!("{}", package_set_str);
+
+    let new_package_set = serde_yaml::from_str(&package_set_str).unwrap();
+    assert_eq!(package_set, new_package_set);
 }
 
 #[test]
@@ -107,8 +116,13 @@ fn test_parse_package_set_with_packages() {
           set-lux: "{{local-bin}}/set-lux"
         "##;
 
-    let config: PackageSet = serde_yaml::from_str(config_str).unwrap();
-    println!("{:?}", config);
+    let package_set: PackageSet = serde_yaml::from_str(config_str).unwrap();
+    println!("{:?}", package_set);
+    assert_eq!(package_set.name(), "lux");
+    assert_eq!(package_set.env_file(), &Some("sample.env".to_string()));
+    assert_eq!(package_set.packages().unwrap().count(), 1);
+    assert!(package_set.scripts().is_none());
+    assert_eq!(package_set.link_files().len(), 1)
 }
 
 #[test]
@@ -124,41 +138,11 @@ fn test_parse_package_set_with_scripts() {
           set-lux: "{{local-bin}}/set-lux"
         "##;
 
-    let config: PackageSet = serde_yaml::from_str(config_str).unwrap();
-    println!("{:?}", config);
-}
-
-#[test]
-fn test_package_set_with_packages_to_string() {
-    let package_set = PackageSetBuilder::named("lux")
-        .env_file("sample.env")
-        .with_package_actions()
-        .add_package_action(
-            PackageBuilder::named("lux")
-                .for_any_platform()
-                .using_language_installer("python")
-                .build(),
-        )
-        .unwrap()
-        .add_link_file("set-lux", "{{local-bin}}/set-lux")
-        .build();
-
-    let package_set_str = serde_yaml::to_string(&package_set).unwrap();
-    println!("{}", package_set_str);
-}
-
-#[test]
-fn test_package_set_with_scripts_to_string() {
-    let package_set = PackageSetBuilder::named("lux")
-        .env_file("sample.env")
-        .with_script_actions()
-        .add_script_action(InstallActionKind::Install, "install-lux")
-        .unwrap()
-        .add_script_action(InstallActionKind::Uninstall, "uninstall-lux")
-        .unwrap()
-        .add_link_file("set-lux", "{{local-bin}}/set-lux")
-        .build();
-
-    let package_set_str = serde_yaml::to_string(&package_set).unwrap();
-    println!("{}", package_set_str);
+    let package_set: PackageSet = serde_yaml::from_str(config_str).unwrap();
+    println!("{:?}", package_set);
+    assert_eq!(package_set.name(), "lux");
+    assert_eq!(package_set.env_file(), &Some("sample.env".to_string()));
+    assert!(package_set.packages().is_none());
+    assert_eq!(package_set.scripts().unwrap().len(), 2);
+    assert_eq!(package_set.link_files().len(), 1)
 }

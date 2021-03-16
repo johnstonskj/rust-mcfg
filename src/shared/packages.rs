@@ -23,7 +23,7 @@ use std::path::PathBuf;
 // ------------------------------------------------------------------------------------------------
 
 #[derive(Deserialize, Serialize, Clone, Debug, PartialEq)]
-#[serde(rename_all = "kebab-case")]
+#[serde(deny_unknown_fields, rename_all = "kebab-case")]
 pub struct Package {
     name: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -33,7 +33,7 @@ pub struct Package {
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug, PartialEq)]
-#[serde(untagged, rename_all = "kebab-case")]
+#[serde(deny_unknown_fields, untagged, rename_all = "kebab-case")]
 pub enum PackageSetActions {
     Packages {
         #[serde(default, skip_serializing_if = "Vec::is_empty")]
@@ -45,8 +45,8 @@ pub enum PackageSetActions {
     },
 }
 
-#[derive(Deserialize, Serialize, Clone, Debug)]
-#[serde(rename_all = "kebab-case")]
+#[derive(Deserialize, Serialize, Clone, Debug, PartialEq)]
+#[serde(deny_unknown_fields, rename_all = "kebab-case")]
 pub struct PackageSet {
     #[serde(skip)]
     path: PathBuf,

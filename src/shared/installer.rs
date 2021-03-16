@@ -9,6 +9,7 @@ More detailed description, with
 
 use crate::error::{ErrorKind, Result};
 use crate::shared::command::ShellCommand;
+use crate::shared::env::{action_vars, package_set_action_vars};
 use crate::shared::install_log::{InstalledPackage, PackageLog};
 use crate::shared::packages::{Package, PackageRepository, PackageSet, PackageSetGroup};
 use crate::shared::{FileSystemResource, PackageKind, Platform};
@@ -24,7 +25,7 @@ use std::path::PathBuf;
 // ------------------------------------------------------------------------------------------------
 
 #[derive(Deserialize, Serialize, Clone, Debug, PartialEq, Eq, Hash)]
-#[serde(rename_all = "kebab-case")]
+#[serde(deny_unknown_fields, rename_all = "kebab-case")]
 pub enum InstallActionKind {
     Install,
     Update,
@@ -33,7 +34,7 @@ pub enum InstallActionKind {
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug, PartialEq, Eq, Hash)]
-#[serde(rename_all = "kebab-case")]
+#[serde(deny_unknown_fields, rename_all = "kebab-case")]
 pub enum InstallerCommandKind {
     Install,
     Update,
@@ -41,7 +42,7 @@ pub enum InstallerCommandKind {
     UpdateSelf,
 }
 
-#[derive(Deserialize, Serialize, Clone, Debug)]
+#[derive(Deserialize, Serialize, Clone, Debug, PartialEq)]
 pub struct Installer {
     name: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -53,7 +54,7 @@ pub struct Installer {
     commands: HashMap<InstallerCommandKind, String>,
 }
 
-#[derive(Deserialize, Serialize, Clone, Debug)]
+#[derive(Clone, Debug)]
 pub struct InstallerRegistry {
     installers: HashMap<(Platform, PackageKind), Installer>,
 }
@@ -125,6 +126,10 @@ impl Installer {
 
     pub fn kind(&self) -> PackageKind {
         self.kind.clone()
+    }
+
+    pub fn commands(&self) -> &HashMap<InstallerCommandKind, String> {
+        &self.commands
     }
 
     fn package_action(
@@ -258,8 +263,7 @@ impl InstallerRegistry {
                     .commands
                     .get(&InstallerCommandKind::UpdateSelf)
                     .unwrap();
-                let variable_replacements =
-                    self.package_variable_replacements(None, &InstallActionKind::Update);
+                let variable_replacements = action_vars(&InstallActionKind::Update);
                 execute_shell_command(cmd_str, &variable_replacements)?;
             }
         }
@@ -350,8 +354,9 @@ impl InstallerRegistry {
             package_set_group.name()
         );
 
-        let mut variable_replacements =
-            self.package_variable_replacements(Some(package_set), action);
+        trace!("package-set {:?}", package_set);
+
+        let mut variable_replacements = package_set_action_vars(package_set, action);
 
         if let Some(cmd_str) = package_set.run_before() {
             trace!("executing `run_before` script");
@@ -381,6 +386,7 @@ impl InstallerRegistry {
         }
 
         if let Some(scripts) = package_set.scripts() {
+            trace!("executing scripts? {:?}", scripts);
             if let Some(cmd_str) = scripts.get(action) {
                 trace!("executing {:?} script", action);
                 execute_shell_command(cmd_str, &variable_replacements)?;
@@ -426,70 +432,6 @@ impl InstallerRegistry {
         }
 
         Ok(())
-    }
-
-    fn package_variable_replacements(
-        &self,
-        package_set: Option<&PackageSet>,
-        action: &InstallActionKind,
-    ) -> HashMap<String, String> {
-        let mut replacements: HashMap<String, String> = Default::default();
-        let _ = replacements.insert("command_action".to_string(), action.to_string());
-        let _ = replacements.insert(
-            "command_log_level".to_string(),
-            log::max_level().to_string().to_lowercase(),
-        );
-        let _ = replacements.insert(
-            "local_download_path".to_string(),
-            dirs_next::download_dir()
-                .unwrap()
-                .to_string_lossy()
-                .to_string(),
-        );
-        let _ = replacements.insert("opsys".to_string(), Platform::CURRENT.to_string());
-        let _ = replacements.insert(
-            "repo_config_path".to_string(),
-            PackageRepository::default_config_path()
-                .to_string_lossy()
-                .to_string(),
-        );
-        let _ = replacements.insert(
-            "repo_local_path".to_string(),
-            PackageRepository::default_local_path()
-                .to_string_lossy()
-                .to_string(),
-        );
-        let _ = replacements.insert("shell".to_string(), "bash".to_string());
-
-        if let Some(package_set) = package_set {
-            let _ = replacements.insert(
-                "package_set_name".to_string(),
-                package_set.name().to_string(),
-            );
-            let _ = replacements.insert(
-                "package_set_file".to_string(),
-                package_set
-                    .path()
-                    .file_name()
-                    .unwrap()
-                    .to_string_lossy()
-                    .into_owned()
-                    .to_string(),
-            );
-            let _ = replacements.insert(
-                "package_set_path".to_string(),
-                package_set
-                    .path()
-                    .parent()
-                    .unwrap()
-                    .to_string_lossy()
-                    .into_owned()
-                    .to_string(),
-            );
-        }
-
-        debug!("package_variable_replacements: {:?}", &replacements);
-        replacements
     }
 
     fn link_file(&self, link: &PathBuf, original: &PathBuf) -> Result<()> {

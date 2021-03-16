@@ -1,8 +1,8 @@
 /*!
-One-line description.
+This crate provides both the library, and command-line tool for 'mcfg': Machine configurator,
+a cross-platform meta-package manager.
 
 More information is found in the [User Guide](https://simonkjohnston.life/rust-mcfg/).
-
 */
 
 #![warn(

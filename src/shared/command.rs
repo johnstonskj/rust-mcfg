@@ -46,18 +46,17 @@ lazy_static! {
     static ref UNQUOTED: Regex = Regex::new(r#"((^|[^\\])")"#).unwrap();
 }
 
-const SHELL_CMD: &'static str = "bash";
-const SHELL_ARG: &'static str = "-c";
-
 impl ShellCommandPlan {
+    const SHELL_ARG: &'static str = "-c";
+
     pub fn new(script_string: &str, variables: &HashMap<String, String>) -> Self {
         debug!("ShellCommandPlan::new({:?})", script_string);
         let safe_script = make_safe(&replace_variables(script_string, variables));
 
-        let mut command = Command::new(SHELL_CMD);
+        let mut command = Command::new(ShellCommand::SHELL_CMD);
         let _ = command
             .envs(variables_to_environment(variables))
-            .args(vec![SHELL_ARG, &safe_script]);
+            .args(vec![Self::SHELL_ARG, &safe_script]);
         trace!("ShellCommandPlan::new: command={:?}", command);
         Self { command }
     }
@@ -103,6 +102,8 @@ impl Default for ShellCommand {
 }
 
 impl ShellCommand {
+    pub const SHELL_CMD: &'static str = "bash";
+
     pub fn new(variables: HashMap<String, String>) -> Self {
         debug!("ShellCommand::new(..)");
         Self { variables }

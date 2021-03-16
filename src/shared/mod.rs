@@ -11,6 +11,8 @@ use std::path::PathBuf;
 // Public Types
 // ------------------------------------------------------------------------------------------------
 
+///
+/// This enumeration
 #[derive(Deserialize, Serialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[serde(rename_all = "kebab-case")]
 pub enum Platform {
@@ -119,6 +121,9 @@ pub use counter::StepCounter;
 
 #[doc(hidden)]
 pub mod editor;
+
+#[doc(hidden)]
+pub mod env;
 
 #[doc(hidden)]
 pub mod installer;
