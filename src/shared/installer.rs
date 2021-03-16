@@ -8,7 +8,7 @@ More detailed description, with
 */
 
 use crate::error::{ErrorKind, Result};
-use crate::shared::command::Tokens;
+use crate::shared::command::ShellCommand;
 use crate::shared::install_log::{InstalledPackage, PackageLog};
 use crate::shared::packages::{Package, PackageRepository, PackageSet, PackageSetGroup};
 use crate::shared::{FileSystemResource, PackageKind, Platform};
@@ -18,7 +18,6 @@ use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 use std::fs::read_to_string;
 use std::path::PathBuf;
-use std::str::FromStr;
 
 // ------------------------------------------------------------------------------------------------
 // Public Types
@@ -491,9 +490,8 @@ fn execute_shell_command(
     variable_replacements: &HashMap<String, String>,
 ) -> Result<()> {
     debug!("execute_shell_command ({:?}", cmd_str);
-    let mut tokenized = Tokens::from_str(cmd_str)?;
-    tokenized.execute_command(variable_replacements)?;
-    Ok(())
+    let shell_command = ShellCommand::new(variable_replacements.clone());
+    shell_command.execute(cmd_str)
 }
 
 pub mod builders {

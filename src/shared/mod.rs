@@ -120,7 +120,7 @@ impl PackageKind {
 
 #[doc(hidden)]
 pub mod command;
-pub use command::Tokens;
+pub use command::{ShellCommand, ShellCommandPlan};
 
 #[doc(hidden)]
 pub mod editor;
