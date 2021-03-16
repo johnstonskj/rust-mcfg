@@ -1,0 +1,59 @@
+---
+- name: apt
+  platform: linux
+  kind: default
+  if_exists: /usr/bin/apt-get
+  commands:
+    install: "apt-get install {{package_name}}"
+    uninstall: "apt-get remove {{package_name}}"
+    update: "apt-get install --only-upgrade {{package_name}}"
+
+- name: yum
+  platform: linux
+  kind: default
+  if_exists: /usr/bin/yum
+  commands:
+    install: "yum install {{package_name}}"
+    uninstall: "yum remove {{package_name}}"
+    update: "yum upgrade {{package_name}}"
+
+- name: homebrew
+  platform: macos
+  kind: default
+  commands:
+    install: "brew install {{package_name}}"
+    uninstall: "brew uninstall {{package_name}}"
+    update-self: "brew update"
+    update: "brew upgrade {{package_name}}"
+
+- name: homebrew apps
+  platform: macos
+  kind: application
+  commands:
+    install: "brew cask install {{package_name}}"
+    uninstall: "brew cask uninstall {{package_name}}"
+    update-self: "brew update"
+    update: "brew cask upgrade {{package_name}}"
+
+- name: cargo
+  kind:
+    language: rust
+  commands:
+    install: "cargo install {{package_name}}"
+    uninstall: "cargo uninstall {{package_name}}"
+
+- name: conda
+  kind:
+    language: python
+  commands:
+    install: "conda install {{package_name}}"
+    uninstall: "conda remove {{package_name}}"
+    update: "conda update {{package_name}}"
+
+- name: gem
+  kind:
+    language: ruby
+  commands:
+    install: "gem install {{package_name}}"
+    uninstall: "gem uninstall {{package_name}}"
+    update: "gem update {{package_name}}"

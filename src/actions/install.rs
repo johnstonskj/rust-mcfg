@@ -45,7 +45,7 @@ impl Action for InstallAction {
             println!("No package sets found in repository");
         } else {
             let installer_registry = InstallerRegistry::open()?;
-            installer_registry.execute(&repository, &self.kind, &self.group, &self.package_set)?;
+            installer_registry.execute(&self.kind, &repository, &self.group, &self.package_set)?;
         }
         Ok(())
     }

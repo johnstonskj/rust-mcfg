@@ -47,6 +47,8 @@ pub struct Installer {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     platform: Option<Platform>,
     kind: PackageKind,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    if_exists: Option<String>,
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     commands: HashMap<InstallerCommandKind, String>,
 }
@@ -102,6 +104,13 @@ impl Installer {
 
     pub fn is_platform_match(&self) -> bool {
         Platform::CURRENT.is_match(&self.platform)
+    }
+
+    pub fn if_exists_match(&self) -> bool {
+        match &self.if_exists {
+            None => true,
+            Some(path) => PathBuf::from(path).exists(),
+        }
     }
 
     pub fn has_upgrade_self(&self) -> bool {
@@ -203,11 +212,26 @@ impl FileSystemResource for InstallerRegistry {
         xdirs::config_dir_for(APP_NAME).unwrap().join(REGISTRY_FILE)
     }
 
-    fn actual_open(registry_file: PathBuf) -> Result<Self> {
+    fn open_from(registry_file: PathBuf) -> Result<Self> {
         info!("InstallerRegistry::read loading from {:?}", registry_file);
         let registry_data = read_to_string(registry_file)?;
         let installers: Vec<Installer> = serde_yaml::from_str(&registry_data)?;
-        Ok(Self::from(installers))
+        debug!(
+            "InstallerRegistry::read: fetched {} installers from registry",
+            installers.len()
+        );
+
+        let (keep, discard): (Vec<Installer>, Vec<Installer>) = installers
+            .into_iter()
+            .partition(|i| i.is_platform_match() && i.if_exists_match());
+        for discarded in discard {
+            info!(
+                "InstallerRegistry::read: discarding installer {}, not a platform match, or 'if_exist' check failed",
+                discarded.name()
+            )
+        }
+
+        Ok(Self::from(keep))
     }
 }
 
@@ -245,8 +269,8 @@ impl InstallerRegistry {
 
     pub fn execute(
         &self,
-        repository: &PackageRepository,
         action: &InstallActionKind,
+        repository: &PackageRepository,
         package_set_group_name: &Option<String>,
         package_set_name: &Option<String>,
     ) -> Result<()> {
@@ -346,7 +370,7 @@ impl InstallerRegistry {
                             .insert("package_name".to_string(), package.name().to_string());
                         installer.package_action(action, package, &variable_replacements)?;
                         log_db.log_installed_package(&InstalledPackage::new(
-                            package_set_group.name(),
+                            &package_set_group.name(),
                             package_set.name(),
                             package.name(),
                             installer.name(),
@@ -535,8 +559,14 @@ pub mod builders {
                 name: name.to_string(),
                 platform: None,
                 kind: Default::default(),
+                if_exists: None,
                 commands: Default::default(),
             })
+        }
+
+        pub fn if_exists(&mut self, cmd_path: &str) -> &mut Self {
+            self.0.if_exists = Some(cmd_path.to_string());
+            self
         }
 
         pub fn for_platform(&mut self, platform: Platform) -> &mut Self {

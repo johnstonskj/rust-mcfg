@@ -60,29 +60,44 @@ pub trait Action {
 // Modules
 // ------------------------------------------------------------------------------------------------
 
+#[doc(hidden)]
 mod installers;
 pub use installers::EditInstallersAction;
 
+#[doc(hidden)]
 mod init;
 pub use init::InitAction;
 
+#[doc(hidden)]
 mod history;
 pub use history::HistoryAction;
 
+#[doc(hidden)]
 mod install;
 pub use install::InstallAction;
 
+#[doc(hidden)]
 mod list;
 pub use list::ListAction;
 
+#[doc(hidden)]
 mod manage;
 pub use manage::ManageAction;
 
+#[doc(hidden)]
 mod paths;
 pub use paths::ShowPathsAction;
 
+#[cfg(feature = "remove-self")]
+#[doc(hidden)]
+mod remove_self;
+#[cfg(feature = "remove-self")]
+pub use remove_self::RemoveSelfAction;
+
+#[doc(hidden)]
 mod refresh;
 pub use refresh::RefreshAction;
 
+#[doc(hidden)]
 mod upgrade;
 pub use upgrade::UpdateSelfAction;

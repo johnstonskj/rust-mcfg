@@ -1,7 +1,6 @@
 use mcfg::shared::packages::PackageRepository;
 use mcfg::shared::FileSystemResource;
 use std::env::current_dir;
-use std::path::PathBuf;
 
 #[test]
 fn test_parse_repository() {
@@ -9,7 +8,8 @@ fn test_parse_repository() {
         .filter_level(log::LevelFilter::Trace)
         .try_init();
     let repository =
-        PackageRepository::open_from(PathBuf::from("tests/root/data/repository")).unwrap();
+        PackageRepository::open_from(current_dir().unwrap().join("tests/root/data/repository"))
+            .unwrap();
     println!("{:#?}", repository);
     assert_eq!(
         repository.path(),

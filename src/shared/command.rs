@@ -53,7 +53,6 @@ impl ShellCommandPlan {
     pub fn new(script_string: &str, variables: &HashMap<String, String>) -> Self {
         debug!("ShellCommandPlan::new({:?})", script_string);
         let safe_script = make_safe(&replace_variables(script_string, variables));
-        trace!("ShellCommandPlan::new: safe_script={}", safe_script);
 
         let mut command = Command::new(SHELL_CMD);
         let _ = command
@@ -79,7 +78,7 @@ impl ShellCommandPlan {
             if log::max_level() >= LevelFilter::Debug {
                 for line in String::from_utf8(out.stderr).unwrap().split('\n') {
                     if !line.is_empty() {
-                        debug!("stderr: {}", line);
+                        warn!("stderr: {}", line);
                     }
                 }
             }
@@ -154,6 +153,7 @@ fn replace_variables(script_string: &str, variables: &HashMap<String, String>) -
         if let Some(replacement) = variables.get(var_name) {
             out_string.push_str(replacement)
         } else {
+            warn!("No variable named {:?} in replacements", var_name);
             out_string.push_str(var_name);
         }
         from = var.end();

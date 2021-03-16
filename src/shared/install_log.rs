@@ -49,7 +49,7 @@ impl FileSystemResource for PackageLog {
         xdirs::log_dir_for(APP_NAME).unwrap().join(LOG_FILE)
     }
 
-    fn actual_open(log_file_path: PathBuf) -> Result<Self> {
+    fn open_from(log_file_path: PathBuf) -> Result<Self> {
         let connection = if !log_file_path.is_file() {
             debug!(
                 "PackageLog::open creating new log file: {:?}",

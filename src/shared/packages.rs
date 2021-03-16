@@ -70,7 +70,6 @@ pub struct PackageSet {
 #[derive(Clone, Debug)]
 pub struct PackageSetGroup {
     path: PathBuf,
-    name: String,
     package_sets: Vec<PackageSet>,
 }
 
@@ -268,17 +267,7 @@ lazy_static! {
 impl Readable for PackageSetGroup {
     fn read(path: &PathBuf) -> Result<Self> {
         debug!("PackageSetGroup::read: reading dir {:?}", path);
-        let name = path.file_name().unwrap().to_string_lossy().to_string();
-        let captures = PSG_NAME.captures(&name);
-        let name = if let Some(captures) = captures {
-            let name = captures.get(2).unwrap();
-            name.as_str().to_string()
-        } else {
-            name
-        }
-        .replace('-', " ");
         let mut group = PackageSetGroup {
-            name,
             path: path.clone(),
             package_sets: Default::default(),
         };
@@ -300,14 +289,26 @@ impl Readable for PackageSetGroup {
                 debug!("PackageSetGroup::read: ignoring {:?}", set_path);
             }
         }
-        group.package_sets.sort_by_key(|ps| ps.name.clone());
+        group.package_sets.sort_by_key(|ps| ps.name().clone());
         Ok(group)
     }
 }
 
 impl PackageSetGroup {
-    pub fn name(&self) -> &String {
-        &self.name
+    pub fn name(&self) -> String {
+        self.path.file_name().unwrap().to_string_lossy().to_string()
+    }
+
+    pub fn display_name(&self) -> String {
+        let name = self.name();
+        let captures = PSG_NAME.captures(&name);
+        if let Some(captures) = captures {
+            let name = captures.get(2).unwrap();
+            name.as_str().to_string()
+        } else {
+            name.clone()
+        }
+        .replace('-', " ")
     }
 
     pub fn path(&self) -> &PathBuf {
@@ -340,7 +341,7 @@ impl FileSystemResource for PackageRepository {
             .join(REPOSITORY_DIR)
     }
 
-    fn actual_open(repository_path: PathBuf) -> Result<Self> {
+    fn open_from(repository_path: PathBuf) -> Result<Self> {
         info!(
             "PackageRepository::actual_open: reading all package data from {:?}",
             &repository_path
@@ -365,7 +366,7 @@ impl FileSystemResource for PackageRepository {
                 }
             }
         }
-        package_set_groups.sort_by_key(|psg| psg.name.clone());
+        package_set_groups.sort_by_key(|psg| psg.name());
         Ok(PackageRepository {
             path: repository_path.clone(),
             package_set_groups,
@@ -399,7 +400,9 @@ impl PackageRepository {
     }
 
     pub fn group(&self, name: &str) -> Option<&PackageSetGroup> {
-        self.package_set_groups.iter().find(|psg| psg.name == name)
+        self.package_set_groups
+            .iter()
+            .find(|psg| psg.name() == name)
     }
 }
 
@@ -663,6 +666,15 @@ pub mod builders {
     }
     // ------------------------------------------------------------------------------------------------
 
+    impl Default for PackageSetGroupBuilder {
+        fn default() -> Self {
+            Self(PackageSetGroup {
+                path: Default::default(),
+                package_sets: Default::default(),
+            })
+        }
+    }
+
     impl From<PackageSetGroup> for PackageSetGroupBuilder {
         fn from(package: PackageSetGroup) -> Self {
             Self(package)
@@ -676,10 +688,9 @@ pub mod builders {
     }
 
     impl PackageSetGroupBuilder {
-        pub fn named(name: &str) -> Self {
+        pub fn new_in(path: PathBuf) -> Self {
             Self(PackageSetGroup {
-                path: Default::default(),
-                name: name.to_string(),
+                path,
                 package_sets: vec![],
             })
         }

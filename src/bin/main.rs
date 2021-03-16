@@ -96,6 +96,9 @@ pub enum SubCommands {
     Edit { group: String, package_set: String },
     /// Remove an existing package-set from the local repository
     Remove { group: String, package_set: String },
+    // --------------------------------------------------------------------------------------------
+    #[cfg(feature = "remove-self")]
+    CompletelyAndPermanentlyRemoveSelf,
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -165,6 +168,8 @@ fn parse() -> Result<Box<dyn Action>> {
         // Help Commands
         // ----------------------------------------------------------------------------------------
         SubCommands::Paths => ShowPathsAction::new(),
+        #[cfg(feature = "remove-self")]
+        SubCommands::CompletelyAndPermanentlyRemoveSelf => RemoveSelfAction::new(),
     }
 }
 

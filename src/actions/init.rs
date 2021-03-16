@@ -10,8 +10,10 @@ More detailed description, with
 use crate::actions::Action;
 use crate::error::Result;
 use crate::shared::install_log::PackageLog;
-use crate::shared::{FileSystemResource, InstallerRegistry, PackageRepository};
+use crate::shared::{FileSystemResource, InstallerRegistry, PackageRepository, StepCounter};
 use git2::Repository;
+use std::fs;
+use std::os::unix::fs as unix_fs;
 use std::path::PathBuf;
 
 // ------------------------------------------------------------------------------------------------
@@ -36,143 +38,100 @@ pub struct InitAction {
 // Implementations
 // ------------------------------------------------------------------------------------------------
 
+const DEFAULT_INSTALLER_REGISTRY: &str = include_str!("default-installers.yml");
+
+const HOMEBREW_PACKAGE_SET: &str = include_str!("macos-homebrew.yml");
+
 impl Action for InitAction {
     fn run(&self) -> Result<()> {
-        let mut steps = 1..;
+        let steps = StepCounter::from_one();
         info!("InitAction::run {:?}", self);
+
         let (link_required, local_dir) = match &self.local_dir {
             None => (false, PackageRepository::default_path()),
             Some(path) => (true, PathBuf::from(path)),
         };
-        println!(
-            "{}. Creating local directory for repository",
-            steps.next().unwrap()
-        );
-        debug!("InitAction::run local_dir={:?}", local_dir);
-        std::fs::create_dir_all(&local_dir)?;
+
+        init_create_dir(&steps, &local_dir, "local directory for repository")?;
+
         let git_repo = local_dir.clone().join(".git");
         if !git_repo.is_dir() {
             match &self.repository_url {
                 None => {
-                    println!("{}. Initializing Git repository", steps.next().unwrap());
+                    println!("{}. Initializing Git repository", steps.step());
                     let _ = Repository::init(local_dir.clone())?;
                 }
                 Some(repo_url) => {
-                    println!(
-                        "{}. Cloning <{}> into repository",
-                        steps.next().unwrap(),
-                        &repo_url
-                    );
+                    println!("{}. Cloning <{}> into repository", steps.step(), &repo_url);
                     debug!("InitAction::run repo_url={:?}", repo_url);
                     let _ = Repository::clone(repo_url, local_dir.clone())?;
                 }
             }
         } else {
-            debug!("InitAction::run git repo exists, ignoring init/clone");
+            warn!("InitAction::run git repo exists, ignoring init/clone");
         }
 
         let repository_path = PackageRepository::default_path();
         if link_required {
             println!(
                 "{}. Creating repository link {:?} -> {:?}",
-                steps.next().unwrap(),
+                steps.step(),
                 local_dir,
                 &repository_path
             );
             debug!("InitAction::run repository_path={:?}", repository_path);
-            std::fs::create_dir_all(repository_path.parent().unwrap())?;
-            std::os::unix::fs::symlink(local_dir, &repository_path)?;
+            fs::create_dir_all(repository_path.parent().unwrap())?;
+            unix_fs::symlink(local_dir, &repository_path)?;
         }
-        println!(
-            "{}. Creating repository config/local directories",
-            steps.next().unwrap()
-        );
-        std::fs::create_dir_all(PackageRepository::default_config_path())?;
-        std::fs::create_dir_all(PackageRepository::default_local_path())?;
 
-        println!(
-            "{}. Creating 'example/hello world' package set",
-            steps.next().unwrap()
-        );
-        let example_group_path = repository_path.join("example");
-        debug!(
-            " InitAction::run example_group_path={:?}",
-            example_group_path
-        );
-        std::fs::create_dir_all(&example_group_path)?;
-        let example_set_file = example_group_path.join("hello-world.yml");
-        debug!(" InitAction::run example_set_file={:?}", example_set_file);
-        std::fs::write(
-            example_set_file,
-            r##"---
+        if matches!(&self.repository_url, None) {
+            init_create_dir(
+                &steps,
+                &PackageRepository::default_config_path(),
+                "repository '.config' directory",
+            )?;
+
+            init_create_dir(
+                &steps,
+                &PackageRepository::default_local_path(),
+                "repository '.local' directory",
+            )?;
+
+            init_create_file(
+                &steps,
+                &repository_path.join("00-installers/macos-homebrew.yml"),
+                "'00-installers/homebrew' package set",
+                HOMEBREW_PACKAGE_SET,
+            )?;
+
+            init_create_file(
+                &steps,
+                &repository_path.join("example/hello-world.yml"),
+                "'example/hello world' package set",
+                r##"---
         name: hello world
         description: just a test to make sure things work
         run-before: cargo --version"##,
-        )?;
-
-        let installer_registry = InstallerRegistry::default_path();
-        if !installer_registry.is_file() {
-            println!(
-                "{}. Creating initial installer registry file",
-                steps.next().unwrap()
-            );
-            debug!(
-                " InitAction::run installer_registry={:?}",
-                installer_registry
-            );
-            std::fs::create_dir_all(installer_registry.parent().unwrap())?;
-            std::fs::write(
-                installer_registry,
-                r##"---
-- name: homebrew
-  platform: macos
-  kind: default
-  commands:
-    install: "brew install {{package_name}}"
-    uninstall: "brew uninstall {{package_name}}"
-    update-self: "brew update"
-    update: "brew upgrade {{package_name}}"
-
-- name: homebrew apps
-  platform: macos
-  kind: application
-  commands:
-    install: "brew cask install {{package_name}}"
-    uninstall: "brew cask uninstall {{package_name}}"
-    update-self: "brew update"
-    update: "brew cask upgrade {{package_name}}"
-
-- name: cargo
-  kind:
-    language: rust
-  commands:
-    install: "cargo install {{package_name}}"
-    uninstall: "cargo uninstall {{package_name}}"
-
-- name: conda
-  kind:
-    language: python
-  commands:
-    install: "conda install {{package_name}}"
-    uninstall: "conda remove {{package_name}}"
-    update: "conda update {{package_name}}"
-
-- name: gem
-  kind:
-    language: ruby
-  commands:
-    install: "gem install {{package_name}}"
-    uninstall: "gem uninstall {{package_name}}"
-    update: "gem update {{package_name}}"
-"##,
             )?;
         } else {
-            debug!(
-                "InitAction::run installer config file {:?} exists",
-                installer_registry
-            );
+            warn!("InitAction::run no examples added to cloned repository");
         }
-        let _ = PackageLog::open();
+
+        init_create_file(
+            &steps,
+            &InstallerRegistry::default_path(),
+            "standard installer registry file",
+            DEFAULT_INSTALLER_REGISTRY,
+        )?;
+
+        let log_file = PackageLog::default_path();
+        if !log_file.is_file() {
+            println!("{}. Creating package install log file", steps.step(),);
+            let _ = PackageLog::open();
+        } else {
+            warn!("InitAction::run log file {:?} exists", log_file)
+        }
+
         println!("Done.");
         Ok(())
     }
@@ -193,6 +152,32 @@ impl InitAction {
 // ------------------------------------------------------------------------------------------------
 // Private Functions
 // ------------------------------------------------------------------------------------------------
+
+fn init_create_dir(steps: &StepCounter, dir_path: &PathBuf, message: &str) -> Result<()> {
+    if !dir_path.is_dir() {
+        println!("{}. Creating {}", steps.step(), message);
+        fs::create_dir_all(PackageRepository::default_config_path())?;
+    } else {
+        warn!("Directory {} ({:?}) exists", message, dir_path);
+    }
+    Ok(())
+}
+
+fn init_create_file(
+    steps: &StepCounter,
+    file_path: &PathBuf,
+    message: &str,
+    content: &str,
+) -> Result<()> {
+    if !file_path.is_file() {
+        println!("{}. Creating {}", steps.step(), message,);
+        fs::create_dir_all(file_path.parent().unwrap())?;
+        fs::write(file_path, content)?;
+    } else {
+        warn!("File {} ({:?}) exists", message, file_path);
+    }
+    Ok(())
+}
 
 // ------------------------------------------------------------------------------------------------
 // Modules

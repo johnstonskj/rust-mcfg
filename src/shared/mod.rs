@@ -4,7 +4,6 @@ Common modules used by the actions defined in [`crate::actions`](../actions/inde
 
 use crate::error::Result;
 use serde::{Deserialize, Serialize};
-use std::env::current_dir;
 use std::fmt::{Display, Formatter};
 use std::path::PathBuf;
 
@@ -34,18 +33,10 @@ pub trait FileSystemResource {
     where
         Self: Sized,
     {
-        Self::actual_open(Self::default_path())
+        Self::open_from(Self::default_path())
     }
 
     fn open_from(non_default_path: PathBuf) -> Result<Self>
-    where
-        Self: Sized,
-    {
-        let base = current_dir().unwrap();
-        Self::actual_open(base.join(non_default_path))
-    }
-
-    fn actual_open(actual_path: PathBuf) -> Result<Self>
     where
         Self: Sized;
 }
@@ -121,6 +112,10 @@ impl PackageKind {
 #[doc(hidden)]
 pub mod command;
 pub use command::{ShellCommand, ShellCommandPlan};
+
+#[doc(hidden)]
+mod counter;
+pub use counter::StepCounter;
 
 #[doc(hidden)]
 pub mod editor;
