@@ -1,2 +1,8 @@
 ---
 name: macos defaults
+actions:
+  scripts:
+    install: >-
+      defaults write com.apple.dashboard devmode YES &&
+      defaults write com.apple.finder _FXShowPosixPathInTitle -bool YES &&
+      defaults write com.apple.Dock showhidden -bool YES
