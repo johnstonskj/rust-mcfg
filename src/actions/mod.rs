@@ -4,7 +4,8 @@ invoked by other tools, however they may have side-effects such as writing to st
 
 # Example
 
-The following is an example `Action` implementation that does very little.
+The following is an example `Action` implementation that does very little. To understand how to
+use existing actions, or create new ones, see the [User Guide](https://simonkjohnston.life/rust-mcfg/).
 
 ```rust
 use mcfg::actions::Action;

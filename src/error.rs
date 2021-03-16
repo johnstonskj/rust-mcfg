@@ -5,6 +5,7 @@ The common `ErrorKind`, `Error`, and `Result` types used throughout.
 #![allow(missing_docs)]
 
 use crate::shared::{PackageKind, Platform};
+use std::process::ExitStatus;
 
 // ------------------------------------------------------------------------------------------------
 // Public Types
@@ -52,6 +53,12 @@ error_chain! {
         InstallerCommandFailed {
             description("Command string for install action failed to run")
             display("Command string for install action failed to run")
+        }
+
+        #[doc("std::process::Command failed to execute command")]
+        CommandExecutionFailed(cmd: String, exit_status: Option<ExitStatus>) {
+            description("std::process::Command failed to execute command")
+            display("std::process::Command failed to execute command '{}', status: {:?}", cmd, exit_status)
         }
 
         #[doc("Invalid builder state")]

@@ -2,6 +2,10 @@
 This crate provides both the library, and command-line tool for 'mcfg': Machine configurator,
 a cross-platform meta-package manager.
 
+The library consists of two parts; the [`actions`](actions/index.html) module implements a simple
+framework for adding commands to the command-line interface, and the [`shared`](actions/shared.html)
+module provides the common models and other utilities required by the actions.
+
 More information is found in the [User Guide](https://simonkjohnston.life/rust-mcfg/).
 */
 

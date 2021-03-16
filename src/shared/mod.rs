@@ -1,5 +1,15 @@
 /*!
-Common modules used by the actions defined in [`crate::actions`](../actions/index.html).
+Common modules used by the actions defined in the [`actions`](../actions/index.html) module.
+
+* Models
+  * **packages**
+  * **installers**
+* Logging
+  * **install log**
+* Command Execution
+  * **shell command**
+  * **editor**
+  * **env**
 */
 
 use crate::error::Result;
