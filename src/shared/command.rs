@@ -4,6 +4,7 @@ use crate::APP_NAME;
 use log::LevelFilter;
 use regex::Regex;
 use std::collections::HashMap;
+use std::env;
 use std::process::Command;
 
 // ------------------------------------------------------------------------------------------------
@@ -14,6 +15,9 @@ use std::process::Command;
 /// A ShellCommand represents a wrapper around `std::process::Command` for commands that are
 /// executed via a shell. It also clearly provides a prepare/execute model which is a little
 /// cleaner than the reuse model provided by `std::process::Command`.
+///
+/// The actual shell used to execute the command is taken from the `SHELL` environment variable
+/// if it exists, or `bash` if it does not.
 ///
 #[derive(Clone, Debug, PartialEq)]
 pub struct ShellCommand {
@@ -44,7 +48,7 @@ impl ShellCommandPlan {
         debug!("ShellCommandPlan::new({:?})", script_string);
         let safe_script = make_safe(&var_string_replace(script_string, variables));
 
-        let mut command = Command::new(ShellCommand::SHELL_CMD);
+        let mut command = Command::new(ShellCommand::run_shell());
         let _ = command
             .envs(vars_to_env_vars(variables, &APP_NAME.to_uppercase()))
             .args(vec![Self::SHELL_ARG, &safe_script]);
@@ -96,7 +100,11 @@ impl Default for ShellCommand {
 }
 
 impl ShellCommand {
-    pub const SHELL_CMD: &'static str = "/bin/bash";
+    /// Determine the shell command to run, this will use the value of the `SHELL` environment
+    /// variable if set, or fall back to `bash`.
+    pub fn run_shell() -> String {
+        env::var("SHELL").unwrap_or("bash".to_string())
+    }
 
     pub fn new(variables: HashMap<String, String>) -> Self {
         debug!("ShellCommand::new(..)");

@@ -1,6 +1,6 @@
 use mcfg::actions::*;
 use mcfg::error::Result;
-use mcfg::shared::{FileSystemResource, InstallerRegistry, PackageRepository};
+use mcfg::shared::{FileSystemResource, InstallerRegistry, PackageRepository, ShellCommand};
 use mcfg::APP_NAME;
 use std::convert::TryInto;
 use std::error::Error;
@@ -84,6 +84,11 @@ pub enum SubCommands {
     History {
         #[structopt(long, short)]
         limit: Option<u32>,
+    },
+    /// Run a shell in the repository directory, with a basic script environment
+    Shell {
+        #[structopt(long, short)]
+        shell: Option<String>,
     },
     // --------------------------------------------------------------------------------------------
     /// Add a new package-set to the local repository
@@ -184,6 +189,9 @@ impl TryInto<Box<dyn Action>> for SubCommands {
             SubCommands::Paths => ShowPathsAction::new(),
             #[cfg(feature = "remove-self")]
             SubCommands::CompletelyAndPermanentlyRemoveSelf => RemoveSelfAction::new(),
+            SubCommands::Shell { shell } => {
+                ShellAction::new(&shell.unwrap_or(ShellCommand::run_shell()))
+            }
         }
     }
 }

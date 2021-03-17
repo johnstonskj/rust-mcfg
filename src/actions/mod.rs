@@ -88,6 +88,10 @@ mod refresh;
 pub use refresh::RefreshAction;
 
 #[doc(hidden)]
+mod shell;
+pub use shell::ShellAction;
+
+#[doc(hidden)]
 mod upgrade;
 use std::fmt::Debug;
 pub use upgrade::UpdateSelfAction;

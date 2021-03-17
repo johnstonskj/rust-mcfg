@@ -40,10 +40,7 @@ pub fn default_vars() -> HashMap<String, String> {
         "command_log_level".to_string(),
         log::max_level().to_string().to_lowercase(),
     );
-    let _ = replacements.insert(
-        "command_shell".to_string(),
-        ShellCommand::SHELL_CMD.to_string(),
-    );
+    let _ = replacements.insert("command_shell".to_string(), ShellCommand::run_shell());
     if let Some(download_dir) = dirs_next::download_dir() {
         let _ = replacements.insert(
             "local_download_path".to_string(),

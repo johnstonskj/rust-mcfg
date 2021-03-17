@@ -158,7 +158,7 @@ impl InitAction {
 fn init_create_dir(steps: &StepCounter, dir_path: &PathBuf, message: &str) -> Result<()> {
     if !dir_path.is_dir() {
         println!("{}. Creating {}", steps.step(), message);
-        fs::create_dir_all(PackageRepository::default_config_path())?;
+        fs::create_dir_all(dir_path)?;
     } else {
         warn!("Directory {} ({:?}) exists", message, dir_path);
     }
