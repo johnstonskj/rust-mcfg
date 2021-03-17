@@ -1,6 +1,17 @@
-# Using Existing Actions
+# Using existing actions
 
-## Example Calling InstallAction
+* HistoryAction
+* InitAction
+* InstallAction
+* EditInstallersAction
+* ListAction
+* ManageAction
+* ShowPathsAction
+* RefreshAction
+* ShellAction
+* UpdateSelfAction
+
+## Example calling InstallAction
 
 ```rust
 use mcfg::actions::InstallAction;

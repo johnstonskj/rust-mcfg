@@ -1,20 +1,23 @@
 # The mcfg Book
 
 - [Introduction](./introduction/index.md)
-  - [Getting Started](./introduction/start-here.md)
-  - [The Tool](./introduction/tool.md)
-  - [The Library](./introduction/library.md)
+  - [Getting started](./introduction/start-here.md)
+  - [The CLI tool](./introduction/tool.md)
+  - [The library API](./introduction/library.md)
 
-- [The Package Set Repository](./repository/index.md)
+- [The package set repository](./repository/index.md)
   - [Packages](./repository/packages.md)
-  - [Packages Sets](./repository/package-sets.md)
-  - [Package Set Groups](./repository/package-set-groups.md)
+  - [Packages sets](./repository/package-sets.md)
+  - [Package set groups](./repository/package-set-groups.md)
 
-- [The Installer Registry](./installers/index.md)
-  - [Scripts](./installers/scripts.md)
+- [The installer registry](./installers/index.md)
 
-- [The mcfg Tool](./tool/index.md)
-  - [Using Existing Actions](./tool/existing.md)
-  - [Adding New Actions](./tool/new.md)
+- [Script strings](./scripts/index.md)
+  - [Variables](./scripts/variables.md)
   
-- [Appendix: Package Sets](./package-sets/index.md)
+- [The mcfg CLI](./tool/index.md)
+  - [Actions](./tool/actions.md)
+  - [Using existing actions](./tool/existing.md)
+  - [Adding new actions](./tool/new.md)
+  
+- [Appendix: Package aets](./package-sets/index.md)

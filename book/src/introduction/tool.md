@@ -1,4 +1,4 @@
-# The Tool
+# The CLI tool
 
 
 ```text
@@ -22,85 +22,54 @@ SUBCOMMANDS:
     init           Initialize a repository to manage package-set installs
     install        Install package-sets as described in the local repository
     installers     Edit the current installer registry file
-    link-files     Link any files specified in package-sets as described in the 
-                   local repository
+    link-files     Link any files specified in package-sets as described in the local repository
     list           List package-sets in the local repository
     paths          Show current path locations
     refresh        Refresh the current repository
     remove         Remove an existing package-set from the local repository
+    shell          Run a shell in the repository directory, with a basic script environment
     uninstall      Uninstall package-sets as described in the local repository
     update         Update package-sets as described in the local repository
     update-self    Show the current configuration
 ```
 
-## Package Repository Commands
+These can be grouped into those that 1) act on the package repository, 2) those that act on package sets, and 3) those
+that act on the installer registry.
 
-### Init
+## Package repository commands
 
-```text
-$ mcfg init -l ~/dotfiles-2
-1. Creating local directory for repository
-2. Initializing Git repository
-3. Creating repository link "/Users/simonjo/dotfiles-2" -> "/Users/simonjo/Library/Application Support/mcfg/repository"
-4. Creating repository config/local directories
-5. Creating 'example/hello world' package set
-6. Creating initial installer registry file
-Done.
-```
+**add**
 
-### Add, Edit, Remove
+**edit**
 
-TBD
+**init**
 
-### List
+**list**
 
-TBD
+**paths**
 
-### Refresh
+**remove**
 
-TBD
+**refresh**
 
-## Package Commands
+**shell**
+
+## Package set commands
 
 All take -p and -g
 
-* **install** install package sets.
-* **link-files**
-* **uninstall** uninstall package sets.
-* **update** update package sets.
+**install** install package sets.
 
-## Installer Commands
+**link-files**
 
-### History
+**uninstall** uninstall package sets.
 
-```text
-+-------------------------------+--------+---------+---------+-----------+
-| Date                          | Group  | Set     | Package | Installer |
-+===============================+========+=========+=========+===========+
-| 2021-03-11 20:28:04.339072 +0 | system | gnu-sed | gnu-sed | homebrew  |
-+-------------------------------+--------+---------+---------+-----------+
-```
+**update** update package sets.
 
-### Update Self
+## Installer commands
 
-TBD
+**history**
 
-## Information Commands
+**installers**
 
-* **installers** edit the current installer registry.
-
-### Paths
-
-```text
-$ mcfg paths
-Package Repository path:
-	"/Users/simon/Library/Application Support/mcfg/repository"
-Package Repository config file path:
-	"/Users/simon/Library/Application Support/mcfg/repository/.config"
-Package Repository local file path:
-	"/Users/simon/Library/Application Support/mcfg/repository/.local"
-Installer Registry path:
-	"/Users/simon/Library/Application Support/mcfg/installers.yml"
-Package Installer log file path:
-	"/Users/simon/Library/Logs/mcfg/install-log.sql"
-```
+**update-self**

@@ -1,1 +1,1 @@
-# The Library
+# The library API

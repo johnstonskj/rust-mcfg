@@ -1,6 +1,6 @@
 # The Installer Registry
 
-# Example Installer Registry File
+## Example Installer Registry file
 
 ```yaml
 - name: homebrew
@@ -29,7 +29,7 @@
     uninstall: "cargo uninstall {{package}}"
 ```
 
-# Example InstallerRegistry API
+## Example InstallerRegistry API
 
 ```rust,no_run
 use mcfg::shared::InstallerRegistry;

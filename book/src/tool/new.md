@@ -1,4 +1,4 @@
-# Adding New Actions
+# Adding new actions
 
 
 The following is an example `Action` implementation that does very little.

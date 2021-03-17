@@ -5,12 +5,14 @@ A package set is described in a YAML file, usually named `package-set.yml` and w
 * A name, and optional description.
 * A flag denoting whether the package set is optional. 
 * An optional script line to run before any other action.
-* A list of [packages](./packages.md) to be installed by their respective installers.
+* **Either**:
+  * A list of [packages](./packages.md) to be installed by their respective installers.
+  * A set of keyed [scripts](#scripts) executed during different installer actions.
 * An optional name for an *env file* to link into the user's configuration space.
 * An optional map of files to be symbolically linked into the user's file system.  
 * An optional script line to run after all other actions.
 
-## Example Package Set File
+## Example Package Set file
 
 ```yaml
 name: lux
