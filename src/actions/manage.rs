@@ -1,6 +1,6 @@
 use crate::actions::Action;
 use crate::error::Result;
-use crate::shared::editor::SystemEditor;
+use crate::shared::command::edit_file;
 use crate::shared::{FileSystemResource, PackageRepository};
 use std::fs::{create_dir_all, write};
 use std::path::PathBuf;
@@ -53,21 +53,20 @@ impl Action for ManageAction {
         match self.kind {
             ManageActionKind::Add => {
                 if !direct_path.exists() && !indirect_path.exists() {
-                    let editor = SystemEditor::default();
                     if self.package_set_is_file {
                         create_dir_all(direct_path.parent().unwrap())?;
                         write(
                             &direct_path,
                             EMPTY_PACKAGE_SET.replace("pset", &self.package_set),
                         )?;
-                        editor.edit(&direct_path)?;
+                        edit_file(&direct_path)?;
                     } else {
                         create_dir_all(indirect_path.parent().unwrap())?;
                         write(
                             &indirect_path,
                             EMPTY_PACKAGE_SET.replace("pset", &self.package_set),
                         )?;
-                        editor.edit(&indirect_path)?;
+                        edit_file(&indirect_path)?;
                     }
                 } else {
                     eprintln!(
@@ -76,29 +75,26 @@ impl Action for ManageAction {
                     );
                 }
             }
-            ManageActionKind::Edit => {
-                let editor = SystemEditor::default();
-                match (direct_path.exists(), indirect_path.exists()) {
-                    (true, false) => {
-                        editor.edit(&direct_path)?;
-                    }
-                    (false, true) => {
-                        editor.edit(&indirect_path)?;
-                    }
-                    (true, true) => {
-                        eprintln!(
+            ManageActionKind::Edit => match (direct_path.exists(), indirect_path.exists()) {
+                (true, false) => {
+                    edit_file(&direct_path)?;
+                }
+                (false, true) => {
+                    edit_file(&indirect_path)?;
+                }
+                (true, true) => {
+                    eprintln!(
                             "Error: both the package set files {:?} and {:?} exist, I don't know which to edit",
                             direct_path, indirect_path
                         );
-                    }
-                    (false, false) => {
-                        eprintln!(
+                }
+                (false, false) => {
+                    eprintln!(
                             "Error: neither the package set file {:?} or {:?} exist, making it hard to edit them",
                             direct_path, indirect_path
                         );
-                    }
                 }
-            }
+            },
             ManageActionKind::Remove => {
                 if direct_path.exists() {
                     debug!("ManageAction::run: removing file {:?}", direct_path);

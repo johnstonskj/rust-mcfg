@@ -1,5 +1,5 @@
 use crate::error::{ErrorKind, Result};
-use crate::shared::command::ShellCommand;
+use crate::shared::command::execute_shell_command;
 use crate::shared::env::{
     add_action_vars, add_package_action_vars, add_package_set_action_vars, default_vars,
 };
@@ -434,17 +434,8 @@ impl InstallerRegistry {
 }
 
 // ------------------------------------------------------------------------------------------------
-// Private Functions
+// Modules
 // ------------------------------------------------------------------------------------------------
-
-fn execute_shell_command(
-    cmd_str: &str,
-    variable_replacements: &HashMap<String, String>,
-) -> Result<()> {
-    debug!("execute_shell_command ({:?}", cmd_str);
-    let shell_command = ShellCommand::new(variable_replacements.clone());
-    shell_command.execute(cmd_str)
-}
 
 pub mod builders {
     use crate::shared::{InstallActionKind, Installer, PackageKind, Platform};

@@ -139,15 +139,11 @@ impl PackageKind {
 
 #[doc(hidden)]
 pub mod command;
-pub use command::{ShellCommand, ShellCommandPlan};
+pub use command::{edit_file, execute_shell_command, user_editor, user_shell};
 
 #[doc(hidden)]
 mod counter;
 pub use counter::StepCounter;
-
-#[doc(hidden)]
-pub mod editor;
-pub use editor::SystemEditor;
 
 #[doc(hidden)]
 pub mod env;

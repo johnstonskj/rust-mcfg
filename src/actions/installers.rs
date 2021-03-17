@@ -1,6 +1,6 @@
 use crate::actions::Action;
 use crate::error::Result;
-use crate::shared::editor::SystemEditor;
+use crate::shared::command::edit_file;
 use crate::shared::installer::InstallerRegistry;
 use crate::shared::FileSystemResource;
 
@@ -30,8 +30,7 @@ impl Action for EditInstallersAction {
     fn run(&self) -> Result<()> {
         let registry_path = InstallerRegistry::default_path();
         debug!("EditInstallersAction::run editing file {:?}", registry_path);
-        let editor = SystemEditor::default();
-        let _ = editor.edit(&registry_path)?;
+        let _ = edit_file(&registry_path)?;
         Ok(())
     }
 }

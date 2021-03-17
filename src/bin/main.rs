@@ -1,6 +1,6 @@
 use mcfg::actions::*;
 use mcfg::error::Result;
-use mcfg::shared::{FileSystemResource, InstallerRegistry, PackageRepository, ShellCommand};
+use mcfg::shared::{user_shell, FileSystemResource, InstallerRegistry, PackageRepository};
 use mcfg::APP_NAME;
 use std::convert::TryInto;
 use std::error::Error;
@@ -189,9 +189,7 @@ impl TryInto<Box<dyn Action>> for SubCommands {
             SubCommands::Paths => ShowPathsAction::new(),
             #[cfg(feature = "remove-self")]
             SubCommands::CompletelyAndPermanentlyRemoveSelf => RemoveSelfAction::new(),
-            SubCommands::Shell { shell } => {
-                ShellAction::new(&shell.unwrap_or(ShellCommand::run_shell()))
-            }
+            SubCommands::Shell { shell } => ShellAction::new(&shell.unwrap_or(user_shell())),
         }
     }
 }

@@ -5,126 +5,105 @@ use log::LevelFilter;
 use regex::Regex;
 use std::collections::HashMap;
 use std::env;
+use std::path::PathBuf;
 use std::process::Command;
 
 // ------------------------------------------------------------------------------------------------
-// Public Types
+// Public Functions
 // ------------------------------------------------------------------------------------------------
 
-///
-/// A ShellCommand represents a wrapper around `std::process::Command` for commands that are
-/// executed via a shell. It also clearly provides a prepare/execute model which is a little
-/// cleaner than the reuse model provided by `std::process::Command`.
-///
-/// The actual shell used to execute the command is taken from the `SHELL` environment variable
-/// if it exists, or `bash` if it does not.
-///
-#[derive(Clone, Debug, PartialEq)]
-pub struct ShellCommand {
-    variables: HashMap<String, String>,
+#[inline]
+pub fn user_shell() -> String {
+    env::var("SHELL").unwrap_or("bash".to_string())
 }
 
-///
-/// The result of `ShellCommand::prepare` this may be executed any number of times, however it's
-/// details (arguments, environment, etc.) are fixed.
-///
-#[derive(Debug)]
-pub struct ShellCommandPlan {
-    command: Command,
+pub fn execute_shell_command(
+    script_string: &str,
+    variable_replacements: &HashMap<String, String>,
+) -> Result<()> {
+    debug!("execute_shell_command ({:?}, ...)", script_string);
+    let mut command = prepare(script_string, variable_replacements);
+    execute(&mut command)
 }
 
-// ------------------------------------------------------------------------------------------------
-// Implementations
-// ------------------------------------------------------------------------------------------------
-
-lazy_static! {
-    static ref UNQUOTED: Regex = Regex::new(r#"((^|[^\\])")"#).unwrap();
-}
-
-impl ShellCommandPlan {
-    const SHELL_ARG: &'static str = "-c";
-
-    fn new(script_string: &str, variables: &HashMap<String, String>) -> Self {
-        debug!("ShellCommandPlan::new({:?})", script_string);
-        let safe_script = make_safe(&var_string_replace(script_string, variables));
-
-        let mut command = Command::new(ShellCommand::run_shell());
-        let _ = command
-            .envs(vars_to_env_vars(variables, &APP_NAME.to_uppercase()))
-            .args(vec![Self::SHELL_ARG, &safe_script]);
-        trace!("ShellCommandPlan::new: command={:?}", command);
-        Self { command }
+pub fn user_editor() -> String {
+    match (env::var("VISUAL"), env::var("EDITOR")) {
+        (Ok(cmd), _) => cmd,
+        (Err(_), Ok(cmd)) => cmd,
+        (_, _) => "vi".to_string(),
     }
+}
 
-    ///
-    /// Execute the prepared command.
-    ///
-    pub fn execute(&mut self) -> Result<()> {
-        debug!("ShellCommandPlan::execute()");
-        let out = self.command.output()?;
-
-        if log::max_level() >= LevelFilter::Debug {
-            for line in String::from_utf8(out.stdout).unwrap().split('\n') {
-                if !line.is_empty() {
-                    debug!("stdout: {}", line);
-                }
-            }
-        }
-
-        if out.status.success() {
-            if log::max_level() >= LevelFilter::Debug {
-                for line in String::from_utf8(out.stderr).unwrap().split('\n') {
-                    if !line.is_empty() {
-                        warn!("stderr: {}", line);
-                    }
-                }
-            }
+pub fn edit_file(file_path: &PathBuf) -> Result<()> {
+    let editor_command = user_editor();
+    let result = Command::new(&editor_command).arg(file_path).status();
+    if result.is_err() {
+        error!(
+            "Could not start editor {} for file {:?}",
+            editor_command, file_path
+        );
+        Err(ErrorKind::CommandExecutionFailed(editor_command, None).into())
+    } else {
+        let exit_status = result.unwrap();
+        if exit_status.success() {
             Ok(())
         } else {
-            for line in String::from_utf8(out.stderr).unwrap().split('\n') {
-                if !line.is_empty() {
-                    error!("stderr: {}", line);
-                }
-            }
-            Err(ErrorKind::InstallerCommandFailed.into())
+            Err(ErrorKind::CommandExecutionFailed(editor_command, Some(exit_status)).into())
         }
-    }
-}
-
-impl Default for ShellCommand {
-    fn default() -> Self {
-        Self {
-            variables: Default::default(),
-        }
-    }
-}
-
-impl ShellCommand {
-    /// Determine the shell command to run, this will use the value of the `SHELL` environment
-    /// variable if set, or fall back to `bash`.
-    pub fn run_shell() -> String {
-        env::var("SHELL").unwrap_or("bash".to_string())
-    }
-
-    pub fn new(variables: HashMap<String, String>) -> Self {
-        debug!("ShellCommand::new(..)");
-        Self { variables }
-    }
-
-    pub fn prepare(&self, script_string: &str) -> ShellCommandPlan {
-        debug!("ShellCommand::prepare({:?})", script_string);
-        ShellCommandPlan::new(script_string, &self.variables)
-    }
-
-    pub fn execute(&self, script_string: &str) -> Result<()> {
-        debug!("ShellCommand::execute({:?})", script_string);
-        self.prepare(script_string).execute()
     }
 }
 
 // ------------------------------------------------------------------------------------------------
 // Private Functions
 // ------------------------------------------------------------------------------------------------
+
+lazy_static! {
+    static ref UNQUOTED: Regex = Regex::new(r#"((^|[^\\])")"#).unwrap();
+}
+
+const SHELL_ARG: &str = "-c";
+
+fn prepare(script_string: &str, variables: &HashMap<String, String>) -> Command {
+    debug!("prepare({:?}, ...)", script_string);
+    let safe_script = make_safe(&var_string_replace(script_string, variables));
+
+    let mut command = Command::new(user_shell());
+    let _ = command
+        .envs(vars_to_env_vars(variables, &APP_NAME.to_uppercase()))
+        .args(vec![SHELL_ARG, &safe_script]);
+    command
+}
+
+fn execute(command: &mut Command) -> Result<()> {
+    debug!("execute({:?})", command);
+    let out = command.output()?;
+
+    if log::max_level() >= LevelFilter::Debug {
+        for line in String::from_utf8(out.stdout).unwrap().split('\n') {
+            if !line.is_empty() {
+                debug!("stdout: {}", line);
+            }
+        }
+    }
+
+    if out.status.success() {
+        if log::max_level() >= LevelFilter::Debug {
+            for line in String::from_utf8(out.stderr).unwrap().split('\n') {
+                if !line.is_empty() {
+                    warn!("stderr: {}", line);
+                }
+            }
+        }
+        Ok(())
+    } else {
+        for line in String::from_utf8(out.stderr).unwrap().split('\n') {
+            if !line.is_empty() {
+                error!("stderr: {}", line);
+            }
+        }
+        Err(ErrorKind::InstallerCommandFailed.into())
+    }
+}
 
 fn make_safe(script_string: &str) -> String {
     let mut out_string = String::new();
