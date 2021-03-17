@@ -49,7 +49,9 @@ $ mcfg init -r https://github.com/simon/mcfg-repo.git
 9. Creating package install log file
 ```
 
-Finally, if you would rather
+Finally, if you would rather keep your actual Git repository in a known place outside the standard directory 
+structure you can specify a local directory (with the `-l` argument) and a symlink will be created from the standard
+repository location to your local Git directory.
 
 ```text
 $ mcfg init -r https://github.com/fakeuser/mcfg-repo.git -l $HOME/mcfg-repo

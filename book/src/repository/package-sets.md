@@ -12,6 +12,8 @@ A package set is described in a YAML file, usually named `package-set.yml` and w
 * An optional map of files to be symbolically linked into the user's file system.  
 * An optional script line to run after all other actions.
 
+A number of examples are described in [Example package sets](../appendices/package-sets.md) appendix.
+
 ## Example Package Set file
 
 ```yaml
@@ -26,8 +28,14 @@ link-files:
   set-lux: "{{local-bin}}/set-lux"
 ```
 
-## Scripts
+## Env variables
 
-## Env Files
+## Package actions
 
-## Link Files 
+## Script actions
+
+# Run-before and run-after script strings
+
+## Env files
+
+## Link files 

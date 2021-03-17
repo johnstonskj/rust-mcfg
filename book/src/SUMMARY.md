@@ -20,4 +20,4 @@
   - [Using existing actions](./tool/existing.md)
   - [Adding new actions](./tool/new.md)
   
-- [Appendix: Package aets](./package-sets/index.md)
+- [Appendix: Example package sets](./appendices/package-sets.md)
