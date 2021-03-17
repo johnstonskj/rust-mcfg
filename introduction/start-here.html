@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Getting Started - The mcfg Book</title>
+        <title>Getting started - The mcfg Book</title>
         
 
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
@@ -83,7 +83,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="../introduction/index.html"><strong aria-hidden="true">1.</strong> Introduction</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../introduction/start-here.html" class="active"><strong aria-hidden="true">1.1.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="../introduction/tool.html"><strong aria-hidden="true">1.2.</strong> The Tool</a></li><li class="chapter-item expanded "><a href="../introduction/library.html"><strong aria-hidden="true">1.3.</strong> The Library</a></li></ol></li><li class="chapter-item expanded "><a href="../repository/index.html"><strong aria-hidden="true">2.</strong> The Package Set Repository</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../repository/packages.html"><strong aria-hidden="true">2.1.</strong> Packages</a></li><li class="chapter-item expanded "><a href="../repository/package-sets.html"><strong aria-hidden="true">2.2.</strong> Packages Sets</a></li><li class="chapter-item expanded "><a href="../repository/package-set-groups.html"><strong aria-hidden="true">2.3.</strong> Package Set Groups</a></li></ol></li><li class="chapter-item expanded "><a href="../installers/index.html"><strong aria-hidden="true">3.</strong> The Installer Registry</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../installers/scripts.html"><strong aria-hidden="true">3.1.</strong> Scripts</a></li></ol></li><li class="chapter-item expanded "><a href="../tool/index.html"><strong aria-hidden="true">4.</strong> The mcfg Tool</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../tool/existing.html"><strong aria-hidden="true">4.1.</strong> Using Existing Actions</a></li><li class="chapter-item expanded "><a href="../tool/new.html"><strong aria-hidden="true">4.2.</strong> Adding New Actions</a></li></ol></li><li class="chapter-item expanded "><a href="../package-sets/index.html"><strong aria-hidden="true">5.</strong> Appendix: Package Sets</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../introduction/index.html"><strong aria-hidden="true">1.</strong> Introduction</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../introduction/start-here.html" class="active"><strong aria-hidden="true">1.1.</strong> Getting started</a></li><li class="chapter-item expanded "><a href="../introduction/tool.html"><strong aria-hidden="true">1.2.</strong> The CLI tool</a></li><li class="chapter-item expanded "><a href="../introduction/library.html"><strong aria-hidden="true">1.3.</strong> The library API</a></li></ol></li><li class="chapter-item expanded "><a href="../repository/index.html"><strong aria-hidden="true">2.</strong> The package set repository</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../repository/packages.html"><strong aria-hidden="true">2.1.</strong> Packages</a></li><li class="chapter-item expanded "><a href="../repository/package-sets.html"><strong aria-hidden="true">2.2.</strong> Packages sets</a></li><li class="chapter-item expanded "><a href="../repository/package-set-groups.html"><strong aria-hidden="true">2.3.</strong> Package set groups</a></li></ol></li><li class="chapter-item expanded "><a href="../installers/index.html"><strong aria-hidden="true">3.</strong> The installer registry</a></li><li class="chapter-item expanded "><a href="../scripts/index.html"><strong aria-hidden="true">4.</strong> Script strings</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../scripts/variables.html"><strong aria-hidden="true">4.1.</strong> Variables</a></li></ol></li><li class="chapter-item expanded "><a href="../tool/index.html"><strong aria-hidden="true">5.</strong> The mcfg CLI</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../tool/actions.html"><strong aria-hidden="true">5.1.</strong> Actions</a></li><li class="chapter-item expanded "><a href="../tool/existing.html"><strong aria-hidden="true">5.2.</strong> Using existing actions</a></li><li class="chapter-item expanded "><a href="../tool/new.html"><strong aria-hidden="true">5.3.</strong> Adding new actions</a></li></ol></li><li class="chapter-item expanded "><a href="../appendices/package-sets.html"><strong aria-hidden="true">6.</strong> Appendix: Example package sets</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -154,33 +154,67 @@
                 <div id="content" class="content">
                     <main>
                         <h1><a class="header" href="#getting-started" id="getting-started">Getting Started</a></h1>
+<p>To use the <code>mcfg</code> tool you need a package repository and an installer registry. Your package repository is a directory
+containing the configuration you want to use for your machine, the installer registry provides details of the tools
+used to actually install individual packages. The tool expects that the package repository is also a Git repository,
+this being the mechanism to share your repository across machines. For first use, the tool has an <strong>init</strong> command 
+that we will demonstrate below.</p>
 <h2><a class="header" href="#install" id="install">Install</a></h2>
-<h2><a class="header" href="#initialize-repository" id="initialize-repository">Initialize Repository</a></h2>
+<p>TBD</p>
+<h2><a class="header" href="#initialize-your-repository" id="initialize-your-repository">Initialize your repository</a></h2>
+<p>To initialize a new repository, on a new machine, using the system defaults for configuration and data paths the 
+following is all that is necessary.</p>
+<pre><code class="language-text">$ mcfg init
+1. Creating local directory for repository
+2. Initializing Git repository
+3. Creating repository '.config' directory
+4. Creating repository '.local' directory
+5. Creating '00-installers/homebrew' package set
+6. Creating '00-installers/homebrew-services' package set
+7. Creating 'example/hello world' package set
+8. Creating standard installer registry file
+9. Creating package install log file
+Done.
+</code></pre>
+<p>Step number 2 is important, after creating the repository directory it will perform the equivalent of a <code>git init</code> 
+command. This sets up the versioning for the repository but obviously as this repository has no upstream origin 
+we can't push changes until we make that connection.</p>
+<p>Alternatively you can provide the URL to an existing Git repository which will be cloned into the package repository
+directory.</p>
+<pre><code class="language-text">$ mcfg init -r https://github.com/simon/mcfg-repo.git
+1. Creating local directory for repository
+2. Cloning &lt;https://github.com/simon/mcfg-repo.git&gt; into repository
+3. Creating repository '.config' directory
+4. Creating repository '.local' directory
+5. Creating '00-installers/homebrew' package set
+6. Creating '00-installers/homebrew-services' package set
+7. Creating 'example/hello world' package set
+8. Creating standard installer registry file
+9. Creating package install log file
+</code></pre>
+<p>Finally, if you would rather keep your actual Git repository in a known place outside the standard directory 
+structure you can specify a local directory (with the <code>-l</code> argument) and a symlink will be created from the standard
+repository location to your local Git directory.</p>
+<pre><code class="language-text">$ mcfg init -r https://github.com/fakeuser/mcfg-repo.git -l $HOME/mcfg-repo
+</code></pre>
 <h3><a class="header" href="#paths" id="paths">Paths</a></h3>
+<p>To show all the paths that the tool uses, the <code>paths</code> command will list them all.</p>
 <pre><code class="language-text">$ mcfg paths
 Package Repository path:
-	&quot;/Users/simonjo/Library/Application Support/mcfg/repository&quot;
+	&quot;/Users/simon/Library/Application Support/mcfg/repository&quot;
 Package Repository symlinked to:
-	&quot;/Users/simonjo/dotfiles-2&quot;
+	&quot;/Users/simon/dotfiles-2&quot;
 Package Repository config file path:
-	&quot;/Users/simonjo/Library/Application Support/mcfg/repository/.config&quot;
+	&quot;/Users/simon/Library/Application Support/mcfg/repository/.config&quot;
 Package Repository local file path:
-	&quot;/Users/simonjo/Library/Application Support/mcfg/repository/.local&quot;
+	&quot;/Users/simon/Library/Application Support/mcfg/repository/.local&quot;
 Installer Registry path:
-	&quot;/Users/simonjo/Library/Application Support/mcfg/installers.yml&quot;
+	&quot;/Users/simon/Library/Application Support/mcfg/installers.yml&quot;
 Package Installer log file path:
-	&quot;/Users/simonjo/Library/Logs/mcfg/install-log.sql&quot;
+	&quot;/Users/simon/Library/Logs/mcfg/install-log.sql&quot;
 </code></pre>
-<p><code>config_path</code> - the path to the user's operating-system specific configuration directory for this
-app.
-<code>installer_file_path</code> the path to the installer registry file; by default this is
-<code>{{config_path}}/installers.yml</code>.
-<code>repository_path</code> - the path to the user's package-set repository; by default this is in the user's
-operating-system specific <em>local data</em> directory, but is often a symbolic link to the repository
-elsewhere.
-<code>log_file_path</code> - the path to the log file which is a SQLite3 database, it is held in the user's
-operating-system specific log directory.</p>
 <h2><a class="header" href="#add-package-sets" id="add-package-sets">Add Package Sets</a></h2>
+<p>The command <code>add &lt;group&gt; &lt;package-set&gt;</code> will create </p>
 
                     </main>
 

@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Packages - The mcfg Book</title>
+        <title>Script strings - The mcfg Book</title>
         
 
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
@@ -83,7 +83,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="../introduction/index.html"><strong aria-hidden="true">1.</strong> Introduction</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../introduction/start-here.html"><strong aria-hidden="true">1.1.</strong> Getting started</a></li><li class="chapter-item expanded "><a href="../introduction/tool.html"><strong aria-hidden="true">1.2.</strong> The CLI tool</a></li><li class="chapter-item expanded "><a href="../introduction/library.html"><strong aria-hidden="true">1.3.</strong> The library API</a></li></ol></li><li class="chapter-item expanded "><a href="../repository/index.html"><strong aria-hidden="true">2.</strong> The package set repository</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../repository/packages.html" class="active"><strong aria-hidden="true">2.1.</strong> Packages</a></li><li class="chapter-item expanded "><a href="../repository/package-sets.html"><strong aria-hidden="true">2.2.</strong> Packages sets</a></li><li class="chapter-item expanded "><a href="../repository/package-set-groups.html"><strong aria-hidden="true">2.3.</strong> Package set groups</a></li></ol></li><li class="chapter-item expanded "><a href="../installers/index.html"><strong aria-hidden="true">3.</strong> The installer registry</a></li><li class="chapter-item expanded "><a href="../scripts/index.html"><strong aria-hidden="true">4.</strong> Script strings</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../scripts/variables.html"><strong aria-hidden="true">4.1.</strong> Variables</a></li></ol></li><li class="chapter-item expanded "><a href="../tool/index.html"><strong aria-hidden="true">5.</strong> The mcfg CLI</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../tool/actions.html"><strong aria-hidden="true">5.1.</strong> Actions</a></li><li class="chapter-item expanded "><a href="../tool/existing.html"><strong aria-hidden="true">5.2.</strong> Using existing actions</a></li><li class="chapter-item expanded "><a href="../tool/new.html"><strong aria-hidden="true">5.3.</strong> Adding new actions</a></li></ol></li><li class="chapter-item expanded "><a href="../appendices/package-sets.html"><strong aria-hidden="true">6.</strong> Appendix: Example package sets</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../introduction/index.html"><strong aria-hidden="true">1.</strong> Introduction</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../introduction/start-here.html"><strong aria-hidden="true">1.1.</strong> Getting started</a></li><li class="chapter-item expanded "><a href="../introduction/tool.html"><strong aria-hidden="true">1.2.</strong> The CLI tool</a></li><li class="chapter-item expanded "><a href="../introduction/library.html"><strong aria-hidden="true">1.3.</strong> The library API</a></li></ol></li><li class="chapter-item expanded "><a href="../repository/index.html"><strong aria-hidden="true">2.</strong> The package set repository</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../repository/packages.html"><strong aria-hidden="true">2.1.</strong> Packages</a></li><li class="chapter-item expanded "><a href="../repository/package-sets.html"><strong aria-hidden="true">2.2.</strong> Packages sets</a></li><li class="chapter-item expanded "><a href="../repository/package-set-groups.html"><strong aria-hidden="true">2.3.</strong> Package set groups</a></li></ol></li><li class="chapter-item expanded "><a href="../installers/index.html"><strong aria-hidden="true">3.</strong> The installer registry</a></li><li class="chapter-item expanded "><a href="../scripts/index.html" class="active"><strong aria-hidden="true">4.</strong> Script strings</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../scripts/variables.html"><strong aria-hidden="true">4.1.</strong> Variables</a></li></ol></li><li class="chapter-item expanded "><a href="../tool/index.html"><strong aria-hidden="true">5.</strong> The mcfg CLI</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../tool/actions.html"><strong aria-hidden="true">5.1.</strong> Actions</a></li><li class="chapter-item expanded "><a href="../tool/existing.html"><strong aria-hidden="true">5.2.</strong> Using existing actions</a></li><li class="chapter-item expanded "><a href="../tool/new.html"><strong aria-hidden="true">5.3.</strong> Adding new actions</a></li></ol></li><li class="chapter-item expanded "><a href="../appendices/package-sets.html"><strong aria-hidden="true">6.</strong> Appendix: Example package sets</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -153,38 +153,35 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1><a class="header" href="#packages" id="packages">Packages</a></h1>
-<p>Packages are described within a <a href="./package-sets.html">package set</a>, they have the following p properties:</p>
-<ul>
-<li>A name.</li>
-<li>An optional platform specification.</li>
-<li>An optional package kind specification.</li>
-</ul>
-<h2><a class="header" href="#platforms" id="platforms">Platforms</a></h2>
-<p>The platform value, typed as <code>Option&lt;mcfg::shared::Platform&gt;</code>, specifies whether a package is only applicable for one 
-of the supported operating system and where <code>None</code> implies no restriction, it should be installed for all.</p>
-<h2><a class="header" href="#package-kinds" id="package-kinds">Package Kinds</a></h2>
-<p>The package kind value, typed as <code>mcfg::shared::PackageKind</code>, specifies the kind of installer to use for this
-package.</p>
-<ul>
-<li>application</li>
-<li>default</li>
-<li>language</li>
-<li>script</li>
-</ul>
+                        <h1><a class="header" href="#script-strings" id="script-strings">Script strings</a></h1>
+<p>Package installers, and package sets, have a number of properties that are intended to execute commands. These are
+simple YAML strings, but some parsing has to be done to ensure correct handling of a number of possibilities.</p>
+<p>These parsing rules <em>should</em> allow the following patterns of usage:</p>
+<p>A simple self-contained command, no shell interpretation or variable substitution.</p>
+<pre><code class="language-yaml">- name: homebrew
+  commands:
+    update-self: &quot;brew upgrade&quot;
+</code></pre>
+<p>A simple command, but parameterized using one or more of the standard script variables.</p>
+<pre><code class="language-yaml">- name: homebrew
+  commands:
+    install: &quot;brew install {{package}}&quot;
+</code></pre>
+<h2><a class="header" href="#usage-in-installers" id="usage-in-installers">Usage in installers</a></h2>
+<h2><a class="header" href="#usage-in-package-sets" id="usage-in-package-sets">Usage in package sets</a></h2>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
                         
-                            <a rel="prev" href="../repository/index.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../installers/index.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
                         
 
                         
-                            <a rel="next" href="../repository/package-sets.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next" href="../scripts/variables.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
                         
@@ -196,13 +193,13 @@ package.</p>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
                 
-                    <a rel="prev" href="../repository/index.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../installers/index.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
                 
 
                 
-                    <a rel="next" href="../repository/package-sets.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next" href="../scripts/variables.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
                 
