@@ -1,12 +1,3 @@
-/*!
-One-line description.
-
-More detailed description, with
-
-# Example
-
-*/
-
 use crate::error::Result;
 use crate::shared::{FileSystemResource, InstallActionKind, PackageKind, Platform};
 use crate::APP_NAME;
@@ -22,6 +13,10 @@ use std::path::PathBuf;
 // Public Types
 // ------------------------------------------------------------------------------------------------
 
+///
+/// A Package is the unit of installation, provided by a configured `Installer`. It therefore has
+/// a name, platform match, and package kind.
+///
 #[derive(Deserialize, Serialize, Clone, Debug, PartialEq)]
 #[serde(deny_unknown_fields, rename_all = "kebab-case")]
 pub struct Package {
@@ -32,6 +27,10 @@ pub struct Package {
     kind: PackageKind,
 }
 
+///
+/// The kinds of actions a package set can perform; either a list of packages to install, *or* a
+/// map of actions to script strings.
+///
 #[derive(Deserialize, Serialize, Clone, Debug, PartialEq)]
 #[serde(deny_unknown_fields, untagged, rename_all = "kebab-case")]
 pub enum PackageSetActions {
@@ -45,6 +44,10 @@ pub enum PackageSetActions {
     },
 }
 
+///
+/// A Package set brings together a set of package actions, with additional actions such as linking
+/// files, adding an env-file, and run before/after script strings.
+///
 #[derive(Deserialize, Serialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "kebab-case")]
 pub struct PackageSet {
@@ -71,40 +74,46 @@ pub struct PackageSet {
     run_after: Option<String>,
 }
 
+///
+/// Package set groups are simply directories in the package repository.
+///
 #[derive(Clone, Debug)]
 pub struct PackageSetGroup {
     path: PathBuf,
     package_sets: Vec<PackageSet>,
 }
 
+///
+/// The package repository is a directory that contains package groups, which in turn contain
+/// package sets.
 #[derive(Clone, Debug)]
 pub struct PackageRepository {
     path: PathBuf,
     package_set_groups: Vec<PackageSetGroup>,
 }
 
+///
+/// The name of the repository directory.
+///
 pub const REPOSITORY_DIR: &str = "repository";
 
+///
+/// A trait implemented by things read from the file system.
 pub trait Readable {
     fn read(path: &PathBuf) -> Result<Self>
     where
         Self: Sized;
 }
 
+///
+/// A trait implemented by things that may be serialized to Writers.
+///
 pub trait Writeable<W: Write>: Serialize {
     fn write(&self, w: &mut W) -> Result<()> {
         serde_yaml::to_writer(w, self)?;
         Ok(())
     }
 }
-
-// ------------------------------------------------------------------------------------------------
-// Private Types
-// ------------------------------------------------------------------------------------------------
-
-// ------------------------------------------------------------------------------------------------
-// Public Functions
-// ------------------------------------------------------------------------------------------------
 
 // ------------------------------------------------------------------------------------------------
 // Implementations
@@ -439,30 +448,34 @@ pub mod builders {
     use std::collections::HashMap;
     use std::path::PathBuf;
 
-    // ------------------------------------------------------------------------------------------------
+    // ---------------------------------------------------------------------------------------------
     // Public Types
-    // ------------------------------------------------------------------------------------------------
+    // --------------------------------------------------------------------------------------------
 
+    ///
+    /// Provides a fluent interface for programmatic creation of [`Package`](../struct.package.html)
+    /// instances.
+    ///
     #[derive(Clone, Debug)]
     pub struct PackageBuilder(Package);
 
+    ///
+    /// Provides a fluent interface for programmatic creation of
+    /// [`PackageSet`](../struct.packageset.html) instances.
+    ///
     #[derive(Clone, Debug)]
     pub struct PackageSetBuilder(PackageSet);
 
+    ///
+    /// Provides a fluent interface for programmatic creation of
+    /// [`PackageSetGroup`](../struct.packagesetgroup.html) instances.
+    ///
     #[derive(Clone, Debug)]
     pub struct PackageSetGroupBuilder(PackageSetGroup);
 
-    // ------------------------------------------------------------------------------------------------
-    // Private Types
-    // ------------------------------------------------------------------------------------------------
-
-    // ------------------------------------------------------------------------------------------------
-    // Public Functions
-    // ------------------------------------------------------------------------------------------------
-
-    // ------------------------------------------------------------------------------------------------
+    // --------------------------------------------------------------------------------------------
     // Implementations
-    // ------------------------------------------------------------------------------------------------
+    // --------------------------------------------------------------------------------------------
 
     impl From<Package> for PackageBuilder {
         fn from(package: Package) -> Self {
@@ -525,7 +538,7 @@ pub mod builders {
         }
     }
 
-    // ------------------------------------------------------------------------------------------------
+    // --------------------------------------------------------------------------------------------
 
     impl From<PackageSet> for PackageSetBuilder {
         fn from(package: PackageSet) -> Self {
@@ -710,7 +723,7 @@ pub mod builders {
             self.0.clone()
         }
     }
-    // ------------------------------------------------------------------------------------------------
+    // --------------------------------------------------------------------------------------------
 
     impl Default for PackageSetGroupBuilder {
         fn default() -> Self {
@@ -754,12 +767,4 @@ pub mod builders {
             self.0.package_sets.push(package_set)
         }
     }
-
-    // ------------------------------------------------------------------------------------------------
-    // Private Functions
-    // ------------------------------------------------------------------------------------------------
-
-    // ------------------------------------------------------------------------------------------------
-    // Modules
-    // ------------------------------------------------------------------------------------------------
 }

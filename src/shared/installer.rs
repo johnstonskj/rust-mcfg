@@ -1,12 +1,3 @@
-/*!
-One-line description.
-
-More detailed description, with
-
-# Example
-
-*/
-
 use crate::error::{ErrorKind, Result};
 use crate::shared::command::ShellCommand;
 use crate::shared::env::{
@@ -26,6 +17,10 @@ use std::path::PathBuf;
 // Public Types
 // ------------------------------------------------------------------------------------------------
 
+///
+/// An action that may be taken by an installer. These are set and passed through by a client such
+/// as the CLI to denote the action to take.
+///
 #[derive(Deserialize, Serialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[serde(deny_unknown_fields, rename_all = "kebab-case")]
 pub enum InstallActionKind {
@@ -35,15 +30,11 @@ pub enum InstallActionKind {
     LinkFiles,
 }
 
-#[derive(Deserialize, Serialize, Clone, Debug, PartialEq, Eq, Hash)]
-#[serde(deny_unknown_fields, rename_all = "kebab-case")]
-pub enum InstallerCommandKind {
-    Install,
-    Update,
-    Uninstall,
-    UpdateSelf,
-}
-
+///
+/// This holds the configuration regarding a single installer type, these can be platform-specific
+/// or not, and are defined to handle one kind of `PackageKind`. These instances are a part of the
+/// `InstallerRegistry` and loaded from a single file.
+///
 #[derive(Deserialize, Serialize, Clone, Debug, PartialEq)]
 pub struct Installer {
     name: String,
@@ -53,23 +44,24 @@ pub struct Installer {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     if_exists: Option<String>,
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
-    commands: HashMap<InstallerCommandKind, String>,
+    commands: HashMap<InstallActionKind, String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    update_self: Option<String>,
 }
 
+///
+/// The installer registry is a file that contains a list of `Installer` configurations. This is
+/// also the interface for installer actions such as install, update, uninstall.
+///
 #[derive(Clone, Debug)]
 pub struct InstallerRegistry {
     installers: HashMap<(Platform, PackageKind), Installer>,
 }
 
+///
+/// The registry file name.
+///
 pub const REGISTRY_FILE: &str = "installers.yml";
-
-// ------------------------------------------------------------------------------------------------
-// Private Types
-// ------------------------------------------------------------------------------------------------
-
-// ------------------------------------------------------------------------------------------------
-// Public Functions
-// ------------------------------------------------------------------------------------------------
 
 // ------------------------------------------------------------------------------------------------
 // Implementations
@@ -92,14 +84,6 @@ impl Display for InstallActionKind {
 
 // ------------------------------------------------------------------------------------------------
 
-impl Default for InstallerCommandKind {
-    fn default() -> Self {
-        Self::Install
-    }
-}
-
-// ------------------------------------------------------------------------------------------------
-
 impl Installer {
     pub fn name(&self) -> &String {
         &self.name
@@ -116,12 +100,6 @@ impl Installer {
         }
     }
 
-    pub fn has_upgrade_self(&self) -> bool {
-        self.commands
-            .keys()
-            .any(|kind| kind == &InstallerCommandKind::UpdateSelf)
-    }
-
     pub fn platform(&self) -> Platform {
         self.platform.as_ref().cloned().unwrap_or_default()
     }
@@ -130,8 +108,20 @@ impl Installer {
         self.kind.clone()
     }
 
-    pub fn commands(&self) -> &HashMap<InstallerCommandKind, String> {
+    pub fn commands(&self) -> &HashMap<InstallActionKind, String> {
         &self.commands
+    }
+
+    pub fn command_for(&self, kind: &InstallActionKind) -> Option<&String> {
+        self.commands.get(kind)
+    }
+
+    pub fn has_update_self(&self) -> bool {
+        self.update_self.is_some()
+    }
+
+    pub fn update_self(&self) -> &Option<String> {
+        &self.update_self
     }
 
     fn package_action(
@@ -142,14 +132,7 @@ impl Installer {
     ) -> Result<()> {
         if self.is_platform_match() && package.is_platform_match() {
             if self.kind() == *package.kind() {
-                let cmd = match action {
-                    InstallActionKind::Install => self.commands.get(&InstallerCommandKind::Install),
-                    InstallActionKind::Update => self.commands.get(&InstallerCommandKind::Update),
-                    InstallActionKind::Uninstall => {
-                        self.commands.get(&InstallerCommandKind::Uninstall)
-                    }
-                    _ => return Ok(()),
-                };
+                let cmd = self.commands.get(&action);
                 if let Some(cmd_str) = cmd {
                     println!(
                         "* performing {} on {} package {}",
@@ -259,12 +242,9 @@ impl InstallerRegistry {
         debug!("InstallerRegistry::update_self");
 
         for installer in self.installers() {
-            if installer.is_platform_match() && installer.has_upgrade_self() {
+            if installer.is_platform_match() && installer.has_update_self() {
                 println!("Updating installer {}", installer.name);
-                let cmd_str = installer
-                    .commands
-                    .get(&InstallerCommandKind::UpdateSelf)
-                    .unwrap();
+                let cmd_str = installer.update_self().as_ref().unwrap();
                 let variable_replacements =
                     add_action_vars(&InstallActionKind::Update, &default_vars());
                 execute_shell_command(cmd_str, &variable_replacements)?;
@@ -467,27 +447,23 @@ fn execute_shell_command(
 }
 
 pub mod builders {
-    use crate::shared::{Installer, InstallerCommandKind, PackageKind, Platform};
+    use crate::shared::{InstallActionKind, Installer, PackageKind, Platform};
     use std::collections::HashMap;
 
-    // ------------------------------------------------------------------------------------------------
+    // --------------------------------------------------------------------------------------------
     // Public Types
-    // ------------------------------------------------------------------------------------------------
+    // --------------------------------------------------------------------------------------------
 
+    ///
+    /// Provides a fluent interface for programmatic creation of [`Installer`](../struct.installer.html)
+    /// instances.
+    ///
     #[derive(Clone, Debug)]
     pub struct InstallerBuilder(Installer);
 
-    // ------------------------------------------------------------------------------------------------
-    // Private Types
-    // ------------------------------------------------------------------------------------------------
-
-    // ------------------------------------------------------------------------------------------------
-    // Public Functions
-    // ------------------------------------------------------------------------------------------------
-
-    // ------------------------------------------------------------------------------------------------
+    // --------------------------------------------------------------------------------------------
     // Implementations
-    // ------------------------------------------------------------------------------------------------
+    // --------------------------------------------------------------------------------------------
 
     impl From<Installer> for InstallerBuilder {
         fn from(installer: Installer) -> Self {
@@ -509,6 +485,7 @@ pub mod builders {
                 kind: Default::default(),
                 if_exists: None,
                 commands: Default::default(),
+                update_self: None,
             })
         }
 
@@ -552,50 +529,43 @@ pub mod builders {
             self.of_kind(PackageKind::Language(language.to_string()))
         }
 
-        pub fn commands_list(&mut self, commands: &[(InstallerCommandKind, String)]) -> &mut Self {
+        pub fn commands_list(&mut self, commands: &[(InstallActionKind, String)]) -> &mut Self {
             self.commands(commands.into_iter().cloned().collect())
         }
 
-        pub fn commands(&mut self, commands: HashMap<InstallerCommandKind, String>) -> &mut Self {
+        pub fn commands(&mut self, commands: HashMap<InstallActionKind, String>) -> &mut Self {
             self.0.commands = commands;
             self
         }
 
-        pub fn add_command(
-            &mut self,
-            kind: InstallerCommandKind,
-            script_string: &str,
-        ) -> &mut Self {
+        pub fn add_command(&mut self, kind: InstallActionKind, script_string: &str) -> &mut Self {
             let _ = self.0.commands.insert(kind, script_string.to_string());
             self
         }
 
         pub fn add_install_command(&mut self, script_string: &str) -> &mut Self {
-            self.add_command(InstallerCommandKind::Install, script_string)
+            self.add_command(InstallActionKind::Install, script_string)
         }
 
         pub fn add_update_command(&mut self, script_string: &str) -> &mut Self {
-            self.add_command(InstallerCommandKind::Update, script_string)
+            self.add_command(InstallActionKind::Update, script_string)
         }
 
         pub fn add_uninstall_command(&mut self, script_string: &str) -> &mut Self {
-            self.add_command(InstallerCommandKind::Uninstall, script_string)
+            self.add_command(InstallActionKind::Uninstall, script_string)
         }
 
-        pub fn add_update_self_command(&mut self, script_string: &str) -> &mut Self {
-            self.add_command(InstallerCommandKind::UpdateSelf, script_string)
+        pub fn add_link_files_command(&mut self, script_string: &str) -> &mut Self {
+            self.add_command(InstallActionKind::LinkFiles, script_string)
+        }
+
+        pub fn update_self_command(&mut self, script_string: &str) -> &mut Self {
+            self.0.update_self = Some(script_string.to_string());
+            self
         }
 
         pub fn installer(&self) -> Installer {
             self.0.clone()
         }
     }
-
-    // ------------------------------------------------------------------------------------------------
-    // Private Functions
-    // ------------------------------------------------------------------------------------------------
-
-    // ------------------------------------------------------------------------------------------------
-    // Modules
-    // ------------------------------------------------------------------------------------------------
 }

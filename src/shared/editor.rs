@@ -1,12 +1,3 @@
-/*!
-One-line description.
-
-More detailed description, with
-
-# Example
-
-*/
-
 use crate::error::{ErrorKind, Result};
 use std::env::var;
 use std::path::PathBuf;
@@ -16,6 +7,9 @@ use std::process::Command;
 // Public Types
 // ------------------------------------------------------------------------------------------------
 
+///
+/// A wrapper to execute the command-line default text editor.
+///
 #[derive(Debug)]
 pub struct SystemEditor(String);
 
@@ -34,14 +28,12 @@ impl Default for SystemEditor {
 }
 
 impl SystemEditor {
-    pub fn new(editor_command: String) -> Self {
-        Self(editor_command)
-    }
-
+    /// Return the determined editor command.
     pub fn command(&self) -> &String {
         &self.0
     }
 
+    /// Edit the provided file with the determined editor command.
     pub fn edit(&self, file_path: &PathBuf) -> Result<()> {
         let result = Command::new(&self.0).arg(file_path).status();
         if result.is_err() {

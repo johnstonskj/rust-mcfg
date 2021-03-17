@@ -1,12 +1,3 @@
-/*!
-One-line description.
-
-More detailed description, with
-
-# Example
-
-*/
-
 use crate::error::{ErrorKind, Result};
 use crate::shared::env::{var_string_replace, vars_to_env_vars};
 use crate::APP_NAME;
@@ -19,23 +10,24 @@ use std::process::Command;
 // Public Types
 // ------------------------------------------------------------------------------------------------
 
+///
+/// A ShellCommand represents a wrapper around `std::process::Command` for commands that are
+/// executed via a shell. It also clearly provides a prepare/execute model which is a little
+/// cleaner than the reuse model provided by `std::process::Command`.
+///
 #[derive(Clone, Debug, PartialEq)]
 pub struct ShellCommand {
     variables: HashMap<String, String>,
 }
 
+///
+/// The result of `ShellCommand::prepare` this may be executed any number of times, however it's
+/// details (arguments, environment, etc.) are fixed.
+///
 #[derive(Debug)]
 pub struct ShellCommandPlan {
     command: Command,
 }
-
-// ------------------------------------------------------------------------------------------------
-// Private Types
-// ------------------------------------------------------------------------------------------------
-
-// ------------------------------------------------------------------------------------------------
-// Public Functions
-// ------------------------------------------------------------------------------------------------
 
 // ------------------------------------------------------------------------------------------------
 // Implementations
@@ -48,7 +40,7 @@ lazy_static! {
 impl ShellCommandPlan {
     const SHELL_ARG: &'static str = "-c";
 
-    pub fn new(script_string: &str, variables: &HashMap<String, String>) -> Self {
+    fn new(script_string: &str, variables: &HashMap<String, String>) -> Self {
         debug!("ShellCommandPlan::new({:?})", script_string);
         let safe_script = make_safe(&var_string_replace(script_string, variables));
 
@@ -60,6 +52,9 @@ impl ShellCommandPlan {
         Self { command }
     }
 
+    ///
+    /// Execute the prepared command.
+    ///
     pub fn execute(&mut self) -> Result<()> {
         debug!("ShellCommandPlan::execute()");
         let out = self.command.output()?;
@@ -140,10 +135,6 @@ fn make_safe(script_string: &str) -> String {
 
     out_string
 }
-
-// ------------------------------------------------------------------------------------------------
-// Modules
-// ------------------------------------------------------------------------------------------------
 
 // ------------------------------------------------------------------------------------------------
 // Unit Tests

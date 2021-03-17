@@ -4,7 +4,7 @@ invoked by other tools, however they may have side-effects such as writing to st
 
 # Example
 
-The following is an example `Action` implementation that does very little. To understand how to
+The following is an example [`Action`](trait.action.html) implementation that does very little. To understand how to
 use existing actions, or create new ones, see the [User Guide](https://simonkjohnston.life/rust-mcfg/).
 
 ```rust
@@ -37,25 +37,13 @@ use crate::error::Result;
 // Public Types
 // ------------------------------------------------------------------------------------------------
 
-pub trait Action {
+///
+/// Implemented by the actions exposed by the CLI.
+///
+pub trait Action: Debug {
+    /// Run this action, this assumes all information was passed to the action during creation.
     fn run(&self) -> Result<()>;
 }
-
-// ------------------------------------------------------------------------------------------------
-// Private Types
-// ------------------------------------------------------------------------------------------------
-
-// ------------------------------------------------------------------------------------------------
-// Public Functions
-// ------------------------------------------------------------------------------------------------
-
-// ------------------------------------------------------------------------------------------------
-// Implementations
-// ------------------------------------------------------------------------------------------------
-
-// ------------------------------------------------------------------------------------------------
-// Private Functions
-// ------------------------------------------------------------------------------------------------
 
 // ------------------------------------------------------------------------------------------------
 // Modules
@@ -101,4 +89,5 @@ pub use refresh::RefreshAction;
 
 #[doc(hidden)]
 mod upgrade;
+use std::fmt::Debug;
 pub use upgrade::UpdateSelfAction;

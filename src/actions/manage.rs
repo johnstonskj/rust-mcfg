@@ -1,12 +1,3 @@
-/*!
-One-line description.
-
-More detailed description, with
-
-# Example
-
-*/
-
 use crate::actions::Action;
 use crate::error::Result;
 use crate::shared::editor::SystemEditor;
@@ -18,13 +9,10 @@ use std::path::PathBuf;
 // Public Types
 // ------------------------------------------------------------------------------------------------
 
-#[derive(Debug)]
-enum ManageActionKind {
-    Add,
-    Edit,
-    Remove,
-}
-
+///
+/// This action performs simple management actions on the package repository -- to add, edit, or
+/// remove package sets.
+///
 #[derive(Debug)]
 pub struct ManageAction {
     kind: ManageActionKind,
@@ -37,19 +25,22 @@ pub struct ManageAction {
 // Private Types
 // ------------------------------------------------------------------------------------------------
 
+#[derive(Debug)]
+enum ManageActionKind {
+    Add,
+    Edit,
+    Remove,
+}
+
+// ------------------------------------------------------------------------------------------------
+// Implementations
+// ------------------------------------------------------------------------------------------------
+
 const EMPTY_PACKAGE_SET: &str = r##"---
 name: pset
 description: my new pset package set.
 packages:
   - name: pset"##;
-
-// ------------------------------------------------------------------------------------------------
-// Public Functions
-// ------------------------------------------------------------------------------------------------
-
-// ------------------------------------------------------------------------------------------------
-// Implementations
-// ------------------------------------------------------------------------------------------------
 
 impl Action for ManageAction {
     fn run(&self) -> Result<()> {
@@ -166,11 +157,3 @@ impl ManageAction {
         }
     }
 }
-
-// ------------------------------------------------------------------------------------------------
-// Private Functions
-// ------------------------------------------------------------------------------------------------
-
-// ------------------------------------------------------------------------------------------------
-// Modules
-// ------------------------------------------------------------------------------------------------

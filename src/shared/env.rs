@@ -1,12 +1,3 @@
-/*!
-One-line description.
-
-More detailed description, with
-
-# Example
-
-*/
-
 use crate::shared::{
     InstallActionKind, Package, PackageRepository, PackageSet, Platform, ShellCommand,
 };
@@ -18,6 +9,27 @@ use std::collections::HashMap;
 // Public Functions
 // ------------------------------------------------------------------------------------------------
 
+///
+/// Return a default set of variables, these can be the basis for any script/command execution
+/// environment.
+///
+/// ## Variables set
+///
+/// The following variables are set by this function.
+///
+/// * `home` - the current user's home directory, usually equivalent to `$HOME`.
+/// * `command_log_level` - the name of the current log level, if a command wishes to do any
+///   logging of it's own.
+/// * `command_shell` - the name of the command shell used to execute script strings.
+/// * `local_download_path` - the name of the user's local download directory.
+/// * `platform` - the value of the `Platform` enum.
+/// * `platform_family` - the operating system family, defined by Rust.
+/// * `platform_os` - the operating system ID, defined by Rust.
+/// * `platform_arch` - the system architecture ID, defined by Rust.
+/// * `repo_config_path` - the path within the package repository for config files.
+/// * `repo_local_path` - the path within the package repository for local files, including the
+///   `bin` directory.
+///
 pub fn default_vars() -> HashMap<String, String> {
     let mut replacements: HashMap<String, String> = Default::default();
     let _ = replacements.insert(
@@ -66,6 +78,18 @@ pub fn default_vars() -> HashMap<String, String> {
     replacements
 }
 
+///
+/// Add additional variables based on the installation action.
+///
+/// It is expected that these variables are added to those returned from `default_vars`.
+///
+/// ## Variable set
+///
+/// The following variables are set by this function.
+///
+/// * `command_action` - the kind of action being performed; one of `install`, `link-files`,
+///   `update`, or `uninstall`.
+///
 pub fn add_action_vars(
     action: &InstallActionKind,
     default_vars: &HashMap<String, String>,
@@ -76,6 +100,19 @@ pub fn add_action_vars(
     replacements
 }
 
+///
+/// Add additional variables based on the the selected PackageSet.
+///
+/// It is expected that these variables are added to those returned from `add_action_vars`.
+///
+/// ## Variables set
+///
+/// The following variables are set by this function.
+///
+/// * `package_set_name` - the name of the package set being actioned.
+/// * `package_set_file` - the name of the package set file, this is within `package_set_path`
+/// * `package_set_path` - the directory containing the package set file.
+///
 pub fn add_package_set_action_vars(
     package_set: &PackageSet,
     action_vars: &HashMap<String, String>,
@@ -110,6 +147,20 @@ pub fn add_package_set_action_vars(
     replacements
 }
 
+///
+/// Add additional variables based on the the selected Package.
+///
+/// It is expected that these variables are added to those returned from `add_package_set_action_vars`.
+///
+/// ## Variables set
+///
+/// The following variables are set by this function.
+///
+/// * `package_name` - the name of the package being actioned.
+/// * `package_config_path` - the current user's local configuration path for this package.
+/// * `package_data_local_path` - the current user's local data path for this package.
+/// * `package_log_path` - the full path to the installer log file.
+///
 pub fn add_package_action_vars(
     package: &Package,
     package_set_vars: &HashMap<String, String>,
@@ -145,6 +196,13 @@ pub fn add_package_action_vars(
     replacements
 }
 
+///
+/// Add any additional variables outside the pre-defined set. These, and **only** these variable
+/// mappings support substitution using the values in `existing_vars`. Substitution will be applied
+/// to both keys and values in `other_vars`.
+///
+/// It is expected that these variables are added to those returned from `add_package_action_vars`.
+///
 pub fn add_other_vars(
     existing_vars: &HashMap<String, String>,
     other_vars: &HashMap<String, String>,
@@ -162,6 +220,11 @@ pub fn add_other_vars(
     replacements
 }
 
+///
+/// Convert the set of provided variables into the preferred for for use as environment
+/// variables in sub-processes. This involves upper-casing the key value and adding the prefix
+/// `MCFG_`.
+///
 pub fn vars_to_env_vars(
     variables: &HashMap<String, String>,
     prefix: &str,
@@ -187,6 +250,15 @@ lazy_static! {
     static ref VARIABLES: Regex = Regex::new(r#"(\{\{[a-zA-Z0-9\-_:]+\}\})"#).unwrap();
 }
 
+///
+/// Substitute variables using the handlebars convention of `"{{name}}"` with the values in the
+/// provided hash.
+///
+/// If no substitution is found in `vars` for a variable the name is simply used instead.
+///
+/// Note that the name portion may only include letters, numbers and the characters `'-'`, `'_'`,
+/// and `':'`. Also, not whitespace is allowed between the braces and name.
+///
 pub fn var_string_replace(string: &str, vars: &HashMap<String, String>) -> String {
     let mut out_string = String::new();
 

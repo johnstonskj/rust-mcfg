@@ -2,6 +2,7 @@ use mcfg::actions::*;
 use mcfg::error::Result;
 use mcfg::shared::{FileSystemResource, InstallerRegistry, PackageRepository};
 use mcfg::APP_NAME;
+use std::convert::TryInto;
 use std::error::Error;
 use structopt::StructOpt;
 
@@ -102,10 +103,6 @@ pub enum SubCommands {
 }
 
 // ------------------------------------------------------------------------------------------------
-// Private Types
-// ------------------------------------------------------------------------------------------------
-
-// ------------------------------------------------------------------------------------------------
 // Private Functions
 // ------------------------------------------------------------------------------------------------
 
@@ -130,47 +127,7 @@ fn parse() -> Result<Box<dyn Action>> {
         panic!("Could not continue");
     }
 
-    match args.sub_command {
-        // ----------------------------------------------------------------------------------------
-        // Repository Commands
-        // ----------------------------------------------------------------------------------------
-        SubCommands::Init {
-            local_dir,
-            repository_url,
-        } => InitAction::new(local_dir, repository_url),
-        SubCommands::Refresh => RefreshAction::new(),
-        SubCommands::Add {
-            group,
-            package_set,
-            as_file,
-        } => ManageAction::add(group, package_set, as_file),
-        SubCommands::Edit { group, package_set } => ManageAction::edit(group, package_set),
-        SubCommands::Remove { group, package_set } => ManageAction::remove(group, package_set),
-        SubCommands::List { group } => ListAction::new(group),
-        // ----------------------------------------------------------------------------------------
-        // Package Commands
-        // ----------------------------------------------------------------------------------------
-        SubCommands::Install { group, package_set } => InstallAction::install(group, package_set),
-        SubCommands::Update { group, package_set } => InstallAction::update(group, package_set),
-        SubCommands::Uninstall { group, package_set } => {
-            InstallAction::uninstall(group, package_set)
-        }
-        SubCommands::LinkFiles { group, package_set } => {
-            InstallAction::link_files(group, package_set)
-        }
-        // ----------------------------------------------------------------------------------------
-        // Installer Commands
-        // ----------------------------------------------------------------------------------------
-        SubCommands::Installers => EditInstallersAction::new(),
-        SubCommands::History { limit } => HistoryAction::new(limit),
-        SubCommands::UpdateSelf => UpdateSelfAction::new(),
-        // ----------------------------------------------------------------------------------------
-        // Help Commands
-        // ----------------------------------------------------------------------------------------
-        SubCommands::Paths => ShowPathsAction::new(),
-        #[cfg(feature = "remove-self")]
-        SubCommands::CompletelyAndPermanentlyRemoveSelf => RemoveSelfAction::new(),
-    }
+    args.sub_command.try_into()
 }
 
 pub fn is_initialized() -> bool {
@@ -180,6 +137,56 @@ pub fn is_initialized() -> bool {
 // ------------------------------------------------------------------------------------------------
 // Implementations
 // ------------------------------------------------------------------------------------------------
+
+impl TryInto<Box<dyn Action>> for SubCommands {
+    type Error = mcfg::error::Error;
+
+    fn try_into(self) -> std::result::Result<Box<dyn Action>, Self::Error> {
+        match self {
+            // ----------------------------------------------------------------------------------------
+            // Repository Commands
+            // ----------------------------------------------------------------------------------------
+            SubCommands::Init {
+                local_dir,
+                repository_url,
+            } => InitAction::new(local_dir, repository_url),
+            SubCommands::Refresh => RefreshAction::new(),
+            SubCommands::Add {
+                group,
+                package_set,
+                as_file,
+            } => ManageAction::add(group, package_set, as_file),
+            SubCommands::Edit { group, package_set } => ManageAction::edit(group, package_set),
+            SubCommands::Remove { group, package_set } => ManageAction::remove(group, package_set),
+            SubCommands::List { group } => ListAction::new(group),
+            // ----------------------------------------------------------------------------------------
+            // Package Commands
+            // ----------------------------------------------------------------------------------------
+            SubCommands::Install { group, package_set } => {
+                InstallAction::install(group, package_set)
+            }
+            SubCommands::Update { group, package_set } => InstallAction::update(group, package_set),
+            SubCommands::Uninstall { group, package_set } => {
+                InstallAction::uninstall(group, package_set)
+            }
+            SubCommands::LinkFiles { group, package_set } => {
+                InstallAction::link_files(group, package_set)
+            }
+            // ----------------------------------------------------------------------------------------
+            // Installer Commands
+            // ----------------------------------------------------------------------------------------
+            SubCommands::Installers => EditInstallersAction::new(),
+            SubCommands::History { limit } => HistoryAction::new(limit),
+            SubCommands::UpdateSelf => UpdateSelfAction::new(),
+            // ----------------------------------------------------------------------------------------
+            // Help Commands
+            // ----------------------------------------------------------------------------------------
+            SubCommands::Paths => ShowPathsAction::new(),
+            #[cfg(feature = "remove-self")]
+            SubCommands::CompletelyAndPermanentlyRemoveSelf => RemoveSelfAction::new(),
+        }
+    }
+}
 
 impl SubCommands {
     fn is_init(&self) -> bool {

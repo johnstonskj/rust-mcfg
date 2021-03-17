@@ -1,12 +1,3 @@
-/*!
-One-line description.
-
-More detailed description, with
-
-# Example
-
-*/
-
 use crate::actions::Action;
 use crate::error::Result;
 use crate::shared::editor::SystemEditor;
@@ -17,6 +8,9 @@ use crate::shared::FileSystemResource;
 // Public Types
 // ------------------------------------------------------------------------------------------------
 
+///
+/// This action will invoke the system text editor to edit the installer registry file.
+///
 #[derive(Debug)]
 pub struct EditInstallersAction {}
 
@@ -47,11 +41,3 @@ impl EditInstallersAction {
         Ok(Box::from(EditInstallersAction {}))
     }
 }
-
-// ------------------------------------------------------------------------------------------------
-// Private Functions
-// ------------------------------------------------------------------------------------------------
-
-// ------------------------------------------------------------------------------------------------
-// Modules
-// ------------------------------------------------------------------------------------------------

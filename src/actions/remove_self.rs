@@ -1,12 +1,3 @@
-/*!
-One-line description.
-
-More detailed description, with
-
-# Example
-
-*/
-
 use crate::actions::Action;
 use crate::error::Result;
 use crate::shared::installer::InstallerRegistry;
@@ -17,16 +8,15 @@ use std::fs;
 // Public Types
 // ------------------------------------------------------------------------------------------------
 
+///
+/// This action will remove the package repository and installer registry. This is only included in
+/// the CLI if the feature "remove-self" is included.
+///
+/// If the package repository directory is a symlink, only the link is removed and the directory
+/// contents are left intact.
+///
 #[derive(Debug)]
 pub struct RemoveSelfAction {}
-
-// ------------------------------------------------------------------------------------------------
-// Private Types
-// ------------------------------------------------------------------------------------------------
-
-// ------------------------------------------------------------------------------------------------
-// Public Functions
-// ------------------------------------------------------------------------------------------------
 
 // ------------------------------------------------------------------------------------------------
 // Implementations
@@ -67,11 +57,3 @@ impl RemoveSelfAction {
         Ok(Box::from(RemoveSelfAction {}))
     }
 }
-
-// ------------------------------------------------------------------------------------------------
-// Private Functions
-// ------------------------------------------------------------------------------------------------
-
-// ------------------------------------------------------------------------------------------------
-// Modules
-// ------------------------------------------------------------------------------------------------

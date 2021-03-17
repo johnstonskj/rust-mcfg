@@ -29,7 +29,7 @@ fn test_write() {
         .for_default_packages()
         .add_install_command("brew install {{package_name}}")
         .add_update_command("brew update {{package_name}}")
-        .add_update_self_command("brew upgrade")
+        .update_self_command("brew upgrade")
         .installer()];
 
     let installers_str = serde_yaml::to_string(&installers).unwrap();

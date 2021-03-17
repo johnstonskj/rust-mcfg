@@ -5,8 +5,8 @@
   commands:
     install: "brew install {{package_name}}"
     uninstall: "brew uninstall {{package_name}}"
-    update-self: "brew update"
     update: "brew upgrade {{package_name}}"
+  update-self: "brew update"
 
 - name: homebrew apps
   platform: macos
@@ -14,8 +14,8 @@
   commands:
     install: "brew cask install {{package_name}}"
     uninstall: "brew cask uninstall {{package_name}}"
-    update-self: "brew update"
     update: "brew cask upgrade {{package_name}}"
+  update-self: "brew update"
 
 - name: cargo
   kind:

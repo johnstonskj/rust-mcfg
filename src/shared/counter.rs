@@ -1,12 +1,3 @@
-/*!
-One-line description.
-
-More detailed description, with
-
-# Example
-
-*/
-
 use std::cell::RefCell;
 use std::ops::RangeFrom;
 
@@ -14,16 +5,11 @@ use std::ops::RangeFrom;
 // Public Types
 // ------------------------------------------------------------------------------------------------
 
+///
+/// A Step counter will simply return an increasing integer (`u32`) value, nothing fancy.
+///
 #[derive(Debug)]
 pub struct StepCounter(RefCell<RangeFrom<u32>>);
-
-// ------------------------------------------------------------------------------------------------
-// Private Types
-// ------------------------------------------------------------------------------------------------
-
-// ------------------------------------------------------------------------------------------------
-// Public Functions
-// ------------------------------------------------------------------------------------------------
 
 // ------------------------------------------------------------------------------------------------
 // Implementations
@@ -36,22 +22,27 @@ impl Default for StepCounter {
 }
 
 impl StepCounter {
+    /// Create a step counter that starts from `0`.
     pub fn from_zero() -> Self {
         Self::from(0)
     }
 
+    /// Create a step counter that starts from `1`.
     pub fn from_one() -> Self {
         Self::from(1)
     }
 
+    /// Create a step counter that starts from an arbitrary value.
     pub fn from(start: u32) -> Self {
         Self(RefCell::from(start..))
     }
 
+    /// Return the current step number, and increment.
     pub fn step(&self) -> u32 {
         self.0.borrow_mut().next().unwrap()
     }
 
+    /// Skip a number of steps and return the step number at that point.
     pub fn steps(&self, skip: u32) -> Option<u32> {
         if skip == 0 {
             None
@@ -60,14 +51,6 @@ impl StepCounter {
         }
     }
 }
-
-// ------------------------------------------------------------------------------------------------
-// Private Functions
-// ------------------------------------------------------------------------------------------------
-
-// ------------------------------------------------------------------------------------------------
-// Modules
-// ------------------------------------------------------------------------------------------------
 
 // ------------------------------------------------------------------------------------------------
 // Unit Tests

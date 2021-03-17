@@ -1,12 +1,3 @@
-/*!
-One-line description.
-
-More detailed description, with
-
-# Example
-
-*/
-
 use crate::error::Result;
 use crate::shared::FileSystemResource;
 use crate::APP_NAME;
@@ -18,9 +9,18 @@ use std::path::PathBuf;
 // Public Types
 // ------------------------------------------------------------------------------------------------
 
+///
+/// This is the log where installer actions are recorded, primarily the successful installation
+/// of packages within a package set.
+///
+/// This file is a SQLite3 file, each log entry is a row in the table `installed`.
+///
 #[derive(Debug)]
 pub struct PackageLog(Connection);
 
+///
+/// This represents a single log entry in `PackageLog`.
+///
 #[derive(Debug)]
 pub struct InstalledPackage {
     date_time: Option<time::OffsetDateTime>,
@@ -30,15 +30,10 @@ pub struct InstalledPackage {
     installer_name: String,
 }
 
+///
+/// The file name of the installer log.
+///
 pub const LOG_FILE: &str = "install-log.sql";
-
-// ------------------------------------------------------------------------------------------------
-// Private Types
-// ------------------------------------------------------------------------------------------------
-
-// ------------------------------------------------------------------------------------------------
-// Public Functions
-// ------------------------------------------------------------------------------------------------
 
 // ------------------------------------------------------------------------------------------------
 // Implementations
@@ -160,11 +155,3 @@ impl InstalledPackage {
         &self.installer_name
     }
 }
-
-// ------------------------------------------------------------------------------------------------
-// Private Functions
-// ------------------------------------------------------------------------------------------------
-
-// ------------------------------------------------------------------------------------------------
-// Modules
-// ------------------------------------------------------------------------------------------------

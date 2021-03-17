@@ -1,12 +1,3 @@
-/*!
-One-line description.
-
-More detailed description, with
-
-# Example
-
-*/
-
 use crate::actions::Action;
 use crate::error::Result;
 use crate::shared::install_log::PackageLog;
@@ -20,6 +11,9 @@ use std::path::PathBuf;
 // Public Types
 // ------------------------------------------------------------------------------------------------
 
+///
+/// This action initializes the package repository and installer registry on a new machine.
+///
 #[derive(Debug)]
 pub struct InitAction {
     local_dir: Option<String>,
