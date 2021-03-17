@@ -11,5 +11,10 @@ fn test_parse_installer_file() {
             .join("tests/root/config/installers.yml"),
     )
     .unwrap();
+
+    #[cfg(target_os = "macos")]
     assert_eq!(registry.installers().count(), 5);
+
+    #[cfg(target_os = "linux")]
+    assert_eq!(registry.installers().count(), 3);
 }
