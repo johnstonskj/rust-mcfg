@@ -1,4 +1,5 @@
 use crate::error::{ErrorKind, Result};
+use crate::shared::default_vars;
 use crate::shared::env::{var_string_replace, vars_to_env_vars};
 use crate::APP_NAME;
 use log::LevelFilter;
@@ -12,20 +13,42 @@ use std::process::Command;
 // Public Functions
 // ------------------------------------------------------------------------------------------------
 
+///
+/// Return the currently selected shell for this terminal session.
+///
 #[inline]
 pub fn user_shell() -> String {
     env::var("SHELL").unwrap_or("bash".to_string())
 }
 
+///
+/// Execute a shell interactively, the shell to run is taken from `user_shell`.
+///
+pub fn execute_interactive_shell(in_dir: PathBuf) -> Result<()> {
+    debug!("execute_interactive_shell ({:?}", in_dir);
+    let program = user_shell();
+    let mut command = Command::new(&program);
+    let _ = command
+        .envs(vars_to_env_vars(&default_vars(), &APP_NAME.to_uppercase()))
+        .current_dir(in_dir);
+    execute(&mut command, &program)
+}
+
+///
+/// Execute a script string using a shell, the shell to run is taken from `user_shell`.
 pub fn execute_shell_command(
     script_string: &str,
     variable_replacements: &HashMap<String, String>,
 ) -> Result<()> {
     debug!("execute_shell_command ({:?}, ...)", script_string);
+    let program = user_shell();
     let mut command = prepare(script_string, variable_replacements);
-    execute(&mut command)
+    execute(&mut command, &program)
 }
 
+///
+/// Return the currently selected editor for this terminal session.
+///
 pub fn user_editor() -> String {
     match (env::var("VISUAL"), env::var("EDITOR")) {
         (Ok(cmd), _) => cmd,
@@ -34,23 +57,15 @@ pub fn user_editor() -> String {
     }
 }
 
+///
+/// Edit the provided file, the editor to run is taken from `user_editor`.
+///
 pub fn edit_file(file_path: &PathBuf) -> Result<()> {
-    let editor_command = user_editor();
-    let result = Command::new(&editor_command).arg(file_path).status();
-    if result.is_err() {
-        error!(
-            "Could not start editor {} for file {:?}",
-            editor_command, file_path
-        );
-        Err(ErrorKind::CommandExecutionFailed(editor_command, None).into())
-    } else {
-        let exit_status = result.unwrap();
-        if exit_status.success() {
-            Ok(())
-        } else {
-            Err(ErrorKind::CommandExecutionFailed(editor_command, Some(exit_status)).into())
-        }
-    }
+    debug!("edit_file ({:?})", file_path);
+    let program = user_editor();
+    let mut command = Command::new(&program);
+    let _ = command.arg(file_path);
+    execute(&mut command, &program)
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -74,34 +89,50 @@ fn prepare(script_string: &str, variables: &HashMap<String, String>) -> Command 
     command
 }
 
-fn execute(command: &mut Command) -> Result<()> {
+fn execute(command: &mut Command, program: &str) -> Result<()> {
     debug!("execute({:?})", command);
-    let out = command.output()?;
+    let result = command.output();
 
-    if log::max_level() >= LevelFilter::Debug {
-        for line in String::from_utf8(out.stdout).unwrap().split('\n') {
-            if !line.is_empty() {
-                debug!("stdout: {}", line);
-            }
-        }
-    }
-
-    if out.status.success() {
-        if log::max_level() >= LevelFilter::Debug {
-            for line in String::from_utf8(out.stderr).unwrap().split('\n') {
-                if !line.is_empty() {
-                    warn!("stderr: {}", line);
+    match result {
+        Ok(output) => {
+            if log::max_level() >= LevelFilter::Debug {
+                for line in String::from_utf8(output.stdout).unwrap().split('\n') {
+                    if !line.is_empty() {
+                        debug!("stdout: {}", line);
+                    }
                 }
             }
-        }
-        Ok(())
-    } else {
-        for line in String::from_utf8(out.stderr).unwrap().split('\n') {
-            if !line.is_empty() {
-                error!("stderr: {}", line);
+
+            let exit_status = output.status;
+            if exit_status.success() {
+                if log::max_level() >= LevelFilter::Debug {
+                    for line in String::from_utf8(output.stderr).unwrap().split('\n') {
+                        if !line.is_empty() {
+                            warn!("stderr: {}", line);
+                        }
+                    }
+                }
+                Ok(())
+            } else {
+                error!(
+                    "Error executing command {}, status: {:?}",
+                    program, exit_status
+                );
+                for line in String::from_utf8(output.stderr).unwrap().split('\n') {
+                    if !line.is_empty() {
+                        error!("stderr: {}", line);
+                    }
+                }
+                Err(
+                    ErrorKind::CommandExecutionFailed(program.to_string(), Some(exit_status))
+                        .into(),
+                )
             }
         }
-        Err(ErrorKind::InstallerCommandFailed.into())
+        Err(err) => {
+            error!("Error executing command {}, err: {:?}", program, err);
+            Err(ErrorKind::CommandExecutionFailed(program.to_string(), None).into())
+        }
     }
 }
 

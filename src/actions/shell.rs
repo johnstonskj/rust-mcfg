@@ -1,9 +1,6 @@
 use crate::actions::Action;
 use crate::error::Result;
-use crate::shared::env::vars_to_env_vars;
-use crate::shared::{default_vars, FileSystemResource, PackageRepository};
-use crate::APP_NAME;
-use std::process::Command;
+use crate::shared::{execute_interactive_shell, FileSystemResource, PackageRepository};
 
 // ------------------------------------------------------------------------------------------------
 // Public Types
@@ -24,17 +21,7 @@ pub struct ShellAction {
 impl Action for ShellAction {
     fn run(&self) -> Result<()> {
         info!("ShellAction::run");
-
-        match Command::new(&self.shell)
-            .envs(vars_to_env_vars(&default_vars(), &APP_NAME.to_uppercase()))
-            .current_dir(PackageRepository::default_path())
-            .status()
-        {
-            Ok(_) => {}
-            Err(_) => {
-                eprintln!("Could not execute shell");
-            }
-        }
+        execute_interactive_shell(PackageRepository::default_path())?;
         Ok(())
     }
 }

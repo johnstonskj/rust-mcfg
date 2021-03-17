@@ -139,7 +139,9 @@ impl PackageKind {
 
 #[doc(hidden)]
 pub mod command;
-pub use command::{edit_file, execute_shell_command, user_editor, user_shell};
+pub use command::{
+    edit_file, execute_interactive_shell, execute_shell_command, user_editor, user_shell,
+};
 
 #[doc(hidden)]
 mod counter;
