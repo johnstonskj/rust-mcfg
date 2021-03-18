@@ -134,7 +134,7 @@ impl Installer {
             if self.kind() == *package.kind() {
                 let cmd = self.commands.get(&action);
                 if let Some(cmd_str) = cmd {
-                    println!(
+                    reportln!(
                         "* performing {} on {} package {}",
                         action,
                         &self.name,
@@ -243,14 +243,14 @@ impl InstallerRegistry {
 
         for installer in self.installers() {
             if installer.is_platform_match() && installer.has_update_self() {
-                println!("Updating installer {}", installer.name);
+                reportln!("Updating installer {}", installer.name);
                 let cmd_str = installer.update_self().as_ref().unwrap();
                 let variable_replacements =
                     add_action_vars(&InstallActionKind::Update, &default_vars());
                 execute_shell_command(cmd_str, &variable_replacements)?;
             }
         }
-        println!("Done.");
+        reportln!("Done.");
         Ok(())
     }
 
@@ -291,7 +291,7 @@ impl InstallerRegistry {
                 )?;
             }
         }
-        println!("Done.");
+        reportln!("Done.");
         Ok(())
     }
 
@@ -330,7 +330,7 @@ impl InstallerRegistry {
         package_set: &PackageSet,
         log_db: &mut PackageLog,
     ) -> Result<()> {
-        println!(
+        reportln!(
             "Performing {} on package-set {} (in group {})",
             action,
             package_set.name(),

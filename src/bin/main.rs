@@ -205,6 +205,7 @@ impl SubCommands {
 // ------------------------------------------------------------------------------------------------
 
 fn main() -> std::result::Result<(), Box<dyn Error>> {
+    mcfg::reporter::set_is_interactive(true);
     parse()?.run()?;
     Ok(())
 }

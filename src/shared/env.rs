@@ -322,7 +322,7 @@ mod tests {
         .collect();
 
         let new_replacements = add_other_vars(&replacements, &test_vars);
-        println!("{:?}", new_replacements);
+        trace!("{:?}", new_replacements);
 
         assert_eq!(
             new_replacements.get("platform-path").unwrap(),

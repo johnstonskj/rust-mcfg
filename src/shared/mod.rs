@@ -12,10 +12,25 @@ Common modules used by the actions defined in the [`actions`](../actions/index.h
   * **env** - the environment variables we set for executing installers
 */
 
-use crate::error::Result;
-use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
 use std::path::PathBuf;
+
+use serde::{Deserialize, Serialize};
+
+pub use command::{
+    edit_file, execute_interactive_shell, execute_shell_command, user_editor, user_shell,
+};
+pub use counter::StepCounter;
+pub use env::{
+    add_action_vars, add_other_vars, add_package_action_vars, add_package_set_action_vars,
+    default_vars,
+};
+pub use install_log::{InstalledPackage, PackageLog};
+pub use installer::{InstallActionKind, Installer, InstallerRegistry};
+pub use packages::{Package, PackageRepository, PackageSet, PackageSetActions, PackageSetGroup};
+
+use crate::error::Result;
+pub use crate::reporter::{is_interactive, set_is_interactive};
 
 // ------------------------------------------------------------------------------------------------
 // Public Types
@@ -139,32 +154,21 @@ impl PackageKind {
 
 #[doc(hidden)]
 pub mod command;
-pub use command::{
-    edit_file, execute_interactive_shell, execute_shell_command, user_editor, user_shell,
-};
 
 #[doc(hidden)]
 mod counter;
-pub use counter::StepCounter;
 
 #[doc(hidden)]
 pub mod env;
-pub use env::{
-    add_action_vars, add_other_vars, add_package_action_vars, add_package_set_action_vars,
-    default_vars,
-};
 
 #[doc(hidden)]
 pub mod installer;
-pub use installer::{InstallActionKind, Installer, InstallerRegistry};
 
 #[doc(hidden)]
 pub mod install_log;
-pub use install_log::{InstalledPackage, PackageLog};
 
 #[doc(hidden)]
 pub mod packages;
-pub use packages::{Package, PackageRepository, PackageSet, PackageSetActions, PackageSetGroup};
 
 ///
 /// Builder implementations to construct package and installer related struct types.
