@@ -38,28 +38,40 @@ impl Action for InstallAction {
 }
 
 impl InstallAction {
-    pub fn install_action(group: Option<Name>, package_set: Option<Name>) -> Result<Box<dyn Action>> {
+    pub fn install_action(
+        group: Option<Name>,
+        package_set: Option<Name>,
+    ) -> Result<Box<dyn Action>> {
         Ok(Box::from(InstallAction {
             kind: InstallActionKind::Install,
             group,
             package_set,
         }))
     }
-    pub fn update_action(group: Option<Name>, package_set: Option<Name>) -> Result<Box<dyn Action>> {
+    pub fn update_action(
+        group: Option<Name>,
+        package_set: Option<Name>,
+    ) -> Result<Box<dyn Action>> {
         Ok(Box::from(InstallAction {
             kind: InstallActionKind::Update,
             group,
             package_set,
         }))
     }
-    pub fn uninstall_action(group: Option<Name>, package_set: Option<Name>) -> Result<Box<dyn Action>> {
+    pub fn uninstall_action(
+        group: Option<Name>,
+        package_set: Option<Name>,
+    ) -> Result<Box<dyn Action>> {
         Ok(Box::from(InstallAction {
             kind: InstallActionKind::Uninstall,
             group,
             package_set,
         }))
     }
-    pub fn link_files_action(group: Option<Name>, package_set: Option<Name>) -> Result<Box<dyn Action>> {
+    pub fn link_files_action(
+        group: Option<Name>,
+        package_set: Option<Name>,
+    ) -> Result<Box<dyn Action>> {
         Ok(Box::from(InstallAction {
             kind: InstallActionKind::LinkFiles,
             group,
