@@ -6,7 +6,8 @@ Machine configurator, a cross-platform meta-package manager.
 ![Minimum Rust Version](https://img.shields.io/badge/Min%20Rust-1.34-green.svg)
 [![crates.io](https://img.shields.io/crates/v/mcfg.svg)](https://crates.io/crates/mcfg)
 [![docs.rs](https://docs.rs/mcfg/badge.svg)](https://docs.rs/mcfg)
-[![travis.ci](https://travis-ci.org/johnstonskj/rust-mcfg.svg?branch=master)](https://travis-ci.org/johnstonskj/rust-mcfg)
+![Build](https://github.com/johnstonskj/rust-mcfg/workflows/Rust/badge.svg)
+![Audit](https://github.com/johnstonskj/rust-mcfg/workflows/Security%20audit/badge.svg)
 [![GitHub stars](https://img.shields.io/github/stars/johnstonskj/rust-mcfg.svg)](https://github.com/johnstonskj/rust-mcfg/stargazers)
 
 The `mcfg` crate and command-line tool, implements a simple *Machine Configurator* or meta-package manager to keep
