@@ -180,6 +180,7 @@ impl Platform {
     /// The platform you are running on.
     #[cfg(target_os = "macos")]
     pub const CURRENT: Platform = Platform::Macos;
+    /// The platform you are running on.
     #[cfg(target_os = "linux")]
     pub const CURRENT: Platform = Platform::Linux;
 
