@@ -66,6 +66,12 @@ error_chain! {
             description("Invalid builder state")
             display("Invalid builder state")
         }
+
+        #[doc("Value provided is not a valid Name representation")]
+        InvalidNameString(name: String) {
+            description("Value provided is not a valid Name representation")
+            display("Value '{}' is not a valid Name representation", name)
+        }
     }
 
     foreign_links {

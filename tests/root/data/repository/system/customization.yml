@@ -1,5 +1,5 @@
 ---
-name: macos defaults
+name: macos-system-defaults
 platform: macos
 actions:
   scripts:

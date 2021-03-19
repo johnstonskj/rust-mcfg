@@ -1,6 +1,8 @@
+use mcfg::shared::builders::Builder;
 use mcfg::shared::installer::builders::InstallerBuilder;
-use mcfg::shared::{Installer, PackageKind, Platform};
+use mcfg::shared::{Installer, Name, PackageKind, Platform};
 use pretty_assertions::assert_eq;
+use std::str::FromStr;
 
 #[test]
 fn test_parse() {
@@ -24,13 +26,13 @@ fn test_parse() {
 
 #[test]
 fn test_write() {
-    let installers = vec![InstallerBuilder::named("homebrew")
+    let installers = vec![InstallerBuilder::named(Name::from_str("homebrew").unwrap())
         .for_macos_only()
         .for_default_packages()
         .add_install_command("brew install {{package_name}}")
         .add_update_command("brew update {{package_name}}")
         .update_self_command("brew upgrade")
-        .installer()];
+        .build()];
 
     let installers_str = serde_yaml::to_string(&installers).unwrap();
     println!("{:?}", installers_str);

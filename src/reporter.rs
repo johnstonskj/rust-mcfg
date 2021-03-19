@@ -48,7 +48,7 @@ pub fn set_is_interactive(is_interactive: bool) {
 ///
 pub fn is_interactive() -> bool {
     reportln!("{}", "str");
-    IS_INTERACTIVE.read().unwrap().clone()
+    *IS_INTERACTIVE.read().unwrap()
 }
 
 #[doc(hidden)]
@@ -59,11 +59,9 @@ pub fn report_message(msg: &str, error: bool) {
         } else {
             println!("{}", msg);
         }
+    } else if error {
+        error!("{}", msg);
     } else {
-        if error {
-            error!("{}", msg);
-        } else {
-            info!("{}", msg);
-        }
+        info!("{}", msg);
     }
 }

@@ -4,4 +4,3 @@ description: my new gnu-sed package set.
 actions:
   packages:
     - name: gnu-sed
-run-after: ls {{package_set_path}}

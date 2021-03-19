@@ -18,7 +18,7 @@ use std::process::Command;
 ///
 #[inline]
 pub fn user_shell() -> String {
-    env::var("SHELL").unwrap_or("bash".to_string())
+    env::var("SHELL").unwrap_or_else(|_| "bash".to_string())
 }
 
 ///

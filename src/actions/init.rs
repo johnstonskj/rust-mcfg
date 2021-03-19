@@ -49,7 +49,7 @@ impl Action for InitAction {
 
         init_create_dir(&steps, &local_dir, "local directory for repository")?;
 
-        let git_repo = local_dir.clone().join(".git");
+        let git_repo = local_dir.join(".git");
         if !git_repo.is_dir() {
             match &self.repository_url {
                 None => {
@@ -111,7 +111,7 @@ impl Action for InitAction {
                 &repository_path.join("example/hello-world.yml"),
                 "'example/hello world' package set",
                 r##"---
-        name: hello world
+        name: hello-world
         description: just a test to make sure things work
         run-before: cargo --version"##,
             )?;
@@ -140,7 +140,7 @@ impl Action for InitAction {
 }
 
 impl InitAction {
-    pub fn new(
+    pub fn new_action(
         local_dir: Option<String>,
         repository_url: Option<String>,
     ) -> Result<Box<dyn Action>> {

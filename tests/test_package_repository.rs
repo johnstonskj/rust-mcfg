@@ -1,6 +1,7 @@
 use mcfg::shared::packages::PackageRepository;
-use mcfg::shared::FileSystemResource;
+use mcfg::shared::{FileSystemResource, Name};
 use std::env::current_dir;
+use std::str::FromStr;
 
 #[test]
 fn test_parse_repository() {
@@ -17,6 +18,8 @@ fn test_parse_repository() {
     );
     assert_eq!(repository.is_empty(), false);
     assert_eq!(repository.groups().count(), 1);
-    let system_group = repository.group("system").unwrap();
-    assert_eq!(system_group.package_sets().count(), 4);
+    let system_group = repository
+        .group(&Name::from_str("system").unwrap())
+        .unwrap();
+    assert_eq!(system_group.package_sets().count(), 5);
 }

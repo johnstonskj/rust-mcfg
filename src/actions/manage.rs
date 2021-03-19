@@ -1,7 +1,7 @@
 use crate::actions::Action;
 use crate::error::Result;
 use crate::shared::command::edit_file;
-use crate::shared::{FileSystemResource, PackageRepository};
+use crate::shared::{FileSystemResource, Name, PackageRepository};
 use std::fs::{create_dir_all, write};
 use std::path::PathBuf;
 
@@ -16,8 +16,8 @@ use std::path::PathBuf;
 #[derive(Debug)]
 pub struct ManageAction {
     kind: ManageActionKind,
-    group: String,
-    package_set: String,
+    group: Name,
+    package_set: Name,
     package_set_is_file: bool,
 }
 
@@ -57,14 +57,14 @@ impl Action for ManageAction {
                         create_dir_all(direct_path.parent().unwrap())?;
                         write(
                             &direct_path,
-                            EMPTY_PACKAGE_SET.replace("pset", &self.package_set),
+                            EMPTY_PACKAGE_SET.replace("pset", &self.package_set.to_string()),
                         )?;
                         edit_file(&direct_path)?;
                     } else {
                         create_dir_all(indirect_path.parent().unwrap())?;
                         write(
                             &indirect_path,
-                            EMPTY_PACKAGE_SET.replace("pset", &self.package_set),
+                            EMPTY_PACKAGE_SET.replace("pset", &self.package_set.to_string()),
                         )?;
                         edit_file(&indirect_path)?;
                     }
@@ -115,9 +115,9 @@ impl Action for ManageAction {
 }
 
 impl ManageAction {
-    pub fn add(
-        group: String,
-        package_set: String,
+    pub fn add_action(
+        group: Name,
+        package_set: Name,
         package_set_is_file: bool,
     ) -> Result<Box<dyn Action>> {
         Ok(Box::new(ManageAction {
@@ -127,7 +127,7 @@ impl ManageAction {
             package_set_is_file,
         }))
     }
-    pub fn edit(group: String, package_set: String) -> Result<Box<dyn Action>> {
+    pub fn edit_action(group: Name, package_set: Name) -> Result<Box<dyn Action>> {
         Ok(Box::new(ManageAction {
             kind: ManageActionKind::Edit,
             group,
@@ -135,7 +135,7 @@ impl ManageAction {
             package_set_is_file: true,
         }))
     }
-    pub fn remove(group: String, package_set: String) -> Result<Box<dyn Action>> {
+    pub fn remove_action(group: Name, package_set: Name) -> Result<Box<dyn Action>> {
         Ok(Box::new(ManageAction {
             kind: ManageActionKind::Remove,
             group,
@@ -145,11 +145,13 @@ impl ManageAction {
     }
 
     fn make_package_set_path(&self, package_set_is_file: bool) -> PathBuf {
-        let group_path = PackageRepository::default_path().join(&self.group);
+        let group_path = PackageRepository::default_path().join(&self.group.as_path());
         if package_set_is_file {
             group_path.join(&format!("{}.yml", self.package_set))
         } else {
-            group_path.join(&self.package_set).join("package-set.yml")
+            group_path
+                .join(&self.package_set.as_path())
+                .join("package-set.yml")
         }
     }
 }

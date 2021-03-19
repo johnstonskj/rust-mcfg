@@ -27,7 +27,7 @@ impl Action for ShellAction {
 }
 
 impl ShellAction {
-    pub fn new(shell: &str) -> Result<Box<dyn Action>> {
+    pub fn new_action(shell: &str) -> Result<Box<dyn Action>> {
         Ok(Box::from(ShellAction {
             shell: shell.to_string(),
         }))

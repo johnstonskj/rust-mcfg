@@ -2,7 +2,7 @@ use crate::actions::Action;
 use crate::error::Result;
 use crate::shared::installer::{InstallActionKind, InstallerRegistry};
 use crate::shared::packages::PackageRepository;
-use crate::shared::FileSystemResource;
+use crate::shared::{FileSystemResource, Name};
 
 // ------------------------------------------------------------------------------------------------
 // Public Types
@@ -14,8 +14,8 @@ use crate::shared::FileSystemResource;
 #[derive(Debug)]
 pub struct InstallAction {
     kind: InstallActionKind,
-    group: Option<String>,
-    package_set: Option<String>,
+    group: Option<Name>,
+    package_set: Option<Name>,
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -38,34 +38,28 @@ impl Action for InstallAction {
 }
 
 impl InstallAction {
-    pub fn install(group: Option<String>, package_set: Option<String>) -> Result<Box<dyn Action>> {
+    pub fn install_action(group: Option<Name>, package_set: Option<Name>) -> Result<Box<dyn Action>> {
         Ok(Box::from(InstallAction {
             kind: InstallActionKind::Install,
             group,
             package_set,
         }))
     }
-    pub fn update(group: Option<String>, package_set: Option<String>) -> Result<Box<dyn Action>> {
+    pub fn update_action(group: Option<Name>, package_set: Option<Name>) -> Result<Box<dyn Action>> {
         Ok(Box::from(InstallAction {
             kind: InstallActionKind::Update,
             group,
             package_set,
         }))
     }
-    pub fn uninstall(
-        group: Option<String>,
-        package_set: Option<String>,
-    ) -> Result<Box<dyn Action>> {
+    pub fn uninstall_action(group: Option<Name>, package_set: Option<Name>) -> Result<Box<dyn Action>> {
         Ok(Box::from(InstallAction {
             kind: InstallActionKind::Uninstall,
             group,
             package_set,
         }))
     }
-    pub fn link_files(
-        group: Option<String>,
-        package_set: Option<String>,
-    ) -> Result<Box<dyn Action>> {
+    pub fn link_files_action(group: Option<Name>, package_set: Option<Name>) -> Result<Box<dyn Action>> {
         Ok(Box::from(InstallAction {
             kind: InstallActionKind::LinkFiles,
             group,

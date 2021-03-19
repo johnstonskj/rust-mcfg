@@ -125,8 +125,7 @@ pub fn add_package_set_action_vars(
             .file_name()
             .unwrap()
             .to_string_lossy()
-            .into_owned()
-            .to_string(),
+            .into_owned(),
     );
     let _ = replacements.insert(
         "package_set_path".to_string(),
@@ -135,8 +134,7 @@ pub fn add_package_set_action_vars(
             .parent()
             .unwrap()
             .to_string_lossy()
-            .into_owned()
-            .to_string(),
+            .into_owned(),
     );
 
     debug!("package_set_action_vars: {:?}", &replacements);
@@ -162,30 +160,27 @@ pub fn add_package_action_vars(
     package_set_vars: &HashMap<String, String>,
 ) -> HashMap<String, String> {
     let mut replacements = package_set_vars.clone();
-    let _ = replacements.insert("package_name".to_string(), package.name().clone());
+    let _ = replacements.insert("package_name".to_string(), package.name().to_string());
     let _ = replacements.insert(
         "package_config_path".to_string(),
-        xdirs::config_dir_for(package.name())
+        xdirs::config_dir_for(&package.name().to_string())
             .unwrap()
             .to_string_lossy()
-            .into_owned()
-            .to_string(),
+            .into_owned(),
     );
     let _ = replacements.insert(
         "package_data_local_path".to_string(),
-        xdirs::data_local_dir_for(package.name())
+        xdirs::data_local_dir_for(&package.name().to_string())
             .unwrap()
             .to_string_lossy()
-            .into_owned()
-            .to_string(),
+            .into_owned(),
     );
     let _ = replacements.insert(
         "package_log_path".to_string(),
-        xdirs::log_dir_for(package.name())
+        xdirs::log_dir_for(&package.name().to_string())
             .unwrap()
             .to_string_lossy()
-            .into_owned()
-            .to_string(),
+            .into_owned(),
     );
 
     debug!("add_package_action_vars: {:?}", &replacements);

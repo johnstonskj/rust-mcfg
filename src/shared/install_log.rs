@@ -1,9 +1,10 @@
 use crate::error::Result;
-use crate::shared::FileSystemResource;
+use crate::shared::{FileSystemResource, Name};
 use crate::APP_NAME;
 use rusqlite::{params, Connection, Row};
 use std::convert::TryFrom;
 use std::path::PathBuf;
+use std::str::FromStr;
 
 // ------------------------------------------------------------------------------------------------
 // Public Types
@@ -24,10 +25,10 @@ pub struct PackageLog(Connection);
 #[derive(Debug)]
 pub struct InstalledPackage {
     date_time: Option<time::OffsetDateTime>,
-    package_set_group_name: String,
-    package_set_name: String,
-    package_name: String,
-    installer_name: String,
+    package_set_group_name: Name,
+    package_set_name: Name,
+    package_name: Name,
+    installer_name: Name,
 }
 
 ///
@@ -75,19 +76,27 @@ impl FileSystemResource for PackageLog {
 }
 
 impl PackageLog {
+    /// Add this installed package to the log file. Currently this only logs successful
+    /// execution of the associated package installer.
     pub fn log_installed_package(&mut self, package: &InstalledPackage) -> Result<()> {
         trace!("Logging package installation success");
         let date_time = time::OffsetDateTime::now_utc();
         let _ = self.0.execute(
             "INSERT INTO installed (date_time, package_set_group, package_set, package, installer) VALUES (?1, ?2, ?3, ?4, ?5)",
-            params![date_time, package.package_set_group_name, package.package_set_name, package.package_name, package.installer_name],
+            params![
+                date_time,
+                package.package_set_group_name.to_string(),
+                package.package_set_name.to_string(),
+                package.package_name.to_string(),
+                package.installer_name.to_string()],
         )?;
         Ok(())
     }
 
+    /// Return up to `limit` number of rows from the installation history.
     pub fn installed_package_history(&mut self, limit: u32) -> Result<Vec<InstalledPackage>> {
         let mut stmt = self.0.prepare(&format!(
-            "SELECT * FROM installed{}",
+            "SELECT * FROM installed ORDER BY date_time DESC{}",
             if limit > 0 {
                 format!(" LIMIT {}", limit)
             } else {
@@ -105,53 +114,66 @@ impl<'stmt> TryFrom<&Row<'stmt>> for InstalledPackage {
     type Error = rusqlite::Error;
 
     fn try_from(row: &Row<'stmt>) -> rusqlite::Result<Self, Self::Error> {
+        fn get_name_from_row(row: &Row<'_>, idx: usize) -> rusqlite::Result<Name, rusqlite::Error> {
+            let value_string: String = row.get(idx)?;
+            let name: Name = Name::from_str(&value_string).unwrap();
+            Ok(name)
+        }
+
         Ok(InstalledPackage {
             date_time: row.get(0)?,
-            package_set_group_name: row.get(1)?,
-            package_set_name: row.get(2)?,
-            package_name: row.get(3)?,
-            installer_name: row.get(4)?,
+            package_set_group_name: get_name_from_row(row, 1)?,
+            package_set_name: get_name_from_row(row, 2)?,
+            package_name: get_name_from_row(row, 3)?,
+            installer_name: get_name_from_row(row, 4)?,
         })
     }
 }
 
 impl InstalledPackage {
+    /// Create a new record for the install history log.
     pub fn new(
-        package_set_group_name: &str,
-        package_set_name: &str,
-        package_name: &str,
-        installer_name: &str,
+        package_set_group_name: Name,
+        package_set_name: Name,
+        package_name: Name,
+        installer_name: Name,
     ) -> Self {
         Self {
             date_time: None,
-            package_set_group_name: package_set_group_name.to_string(),
-            package_set_name: package_set_name.to_string(),
-            package_name: package_name.to_string(),
-            installer_name: installer_name.to_string(),
+            package_set_group_name,
+            package_set_name,
+            package_name,
+            installer_name,
         }
     }
 
+    /// Return the date and time of the installation.
     pub fn date_time(&self) -> &Option<time::OffsetDateTime> {
         &self.date_time
     }
 
+    /// Return the date and time, as a string, of the installation.
     pub fn date_time_str(&self) -> String {
         self.date_time.unwrap().to_string()
     }
 
-    pub fn package_set_group_name(&self) -> &String {
+    /// Return the name of the package set group that contained the package set.
+    pub fn package_set_group_name(&self) -> &Name {
         &self.package_set_group_name
     }
 
-    pub fn package_set_name(&self) -> &String {
+    /// Return the name of the package set that contained the package.
+    pub fn package_set_name(&self) -> &Name {
         &self.package_set_name
     }
 
-    pub fn package_name(&self) -> &String {
+    /// Return the name of the package that was installed.
+    pub fn package_name(&self) -> &Name {
         &self.package_name
     }
 
-    pub fn installer_name(&self) -> &String {
+    /// Return the name of the installer that acted on the package.
+    pub fn installer_name(&self) -> &Name {
         &self.installer_name
     }
 }

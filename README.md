@@ -13,6 +13,10 @@ More information is found in the [User Guide](https://simonkjohnston.life/rust-m
 
 ## Changes
 
+**Version 0.1.1**
+
+* Close to ready, a lot of refactoring completed.
+* Added crate documentation, and some of the book.
 
 **Version 0.1.0**
 

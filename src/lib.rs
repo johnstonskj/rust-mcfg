@@ -18,7 +18,7 @@ More information is found in the [User Guide](https://simonkjohnston.life/rust-m
     trivial_numeric_casts,
     // ---------- Public
     missing_debug_implementations,
-    //missing_docs,
+    missing_docs,
     unreachable_pub,
     // ---------- Unsafe
     unsafe_code,

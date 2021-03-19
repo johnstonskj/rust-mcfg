@@ -79,4 +79,19 @@ Package Installer log file path:
 
 ## Add Package Sets
 
-The command `add <group> <package-set>` will create 
+The command `add <group> <package-set>` will create a new group if one doesn't already exist, a directory for the 
+package set name and finally a `package-set.yml` file within this. If the `-a/--as-file` flag is set the tool will 
+create a new group if one doesn't already exist, and a file name + `.yml`. After creating the package set the tool will 
+execute an editor to edit the template package set file it created. 
+
+Alternatively the `shell` command can be used to start an interactive shell in the repository document so you can
+create groups and package set files more manually.
+
+
+## Install!
+
+Once you
+
+```text
+$ mcfg install
+```

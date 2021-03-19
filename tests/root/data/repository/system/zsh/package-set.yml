@@ -1,0 +1,14 @@
+---
+name: zsh
+description: the Z shell
+actions:
+  packages:
+    - name: zsh
+    - name: zsh-completions
+    - name: zsh-navigation-tools
+      platform: macos
+link-files:
+  dot-zlogin: "{{home}}/.zlogin"
+  dot-zshenv: "{{home}}/.zshenv"
+  dot-zshrc: "{{home}}/.zshrc"
+run-after: "{{package_set_path}}/run-after"

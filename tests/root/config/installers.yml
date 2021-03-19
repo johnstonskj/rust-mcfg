@@ -8,7 +8,7 @@
     update: "brew upgrade {{package_name}}"
   update-self: "brew update"
 
-- name: homebrew apps
+- name: homebrew-apps
   platform: macos
   kind: application
   commands:

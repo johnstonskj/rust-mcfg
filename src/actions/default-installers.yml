@@ -26,7 +26,7 @@
     update: "brew upgrade {{package_name}}"
   update-self: "brew update && brew cleanup && brew doctor"
 
-- name: homebrew apps
+- name: homebrew-apps
   platform: macos
   kind: application
   commands:

@@ -1,12 +1,14 @@
+use mcfg::shared::builders::Builder;
 use mcfg::shared::packages::builders::{PackageBuilder, PackageSetBuilder};
-use mcfg::shared::PackageSet;
+use mcfg::shared::{Name, PackageSet};
 use pretty_assertions::assert_eq;
 use std::collections::HashMap;
 use std::path::PathBuf;
+use std::str::FromStr;
 
 #[test]
 fn test_minimal_package_set() {
-    let package_set = PackageSetBuilder::named("example").build();
+    let package_set = PackageSetBuilder::named(Name::from_str("example").unwrap()).build();
     assert_eq!(package_set.name(), &String::from("example"));
     assert_eq!(package_set.path(), &PathBuf::default());
     assert_eq!(package_set.description(), &None);
@@ -26,12 +28,12 @@ fn test_minimal_package_set() {
 
 #[test]
 fn test_package_set_with_packages() {
-    let package_set = PackageSetBuilder::named("example")
+    let package_set = PackageSetBuilder::named(Name::from_str("example").unwrap())
         .description("an example package set, with package actions")
         .optional()
         .run_before("{{local-bin}}/ex-pre-install")
         .with_package_actions()
-        .add_package_action(PackageBuilder::named("expackage").build())
+        .add_package_action(PackageBuilder::named(Name::from_str("expackage").unwrap()).build())
         .unwrap()
         .env_file("example.env")
         .run_after("{{local-bin}}/ex-post-install")
@@ -64,7 +66,7 @@ fn test_package_set_with_packages() {
 
 #[test]
 fn test_package_set_with_scripts() {
-    let package_set = PackageSetBuilder::named("example")
+    let package_set = PackageSetBuilder::named(Name::from_str("example").unwrap())
         .description("an example package set, with package actions")
         .optional()
         .run_before("{{local-bin}}/ex-pre-install")
@@ -104,15 +106,15 @@ fn test_package_set_with_scripts() {
 
 #[test]
 fn test_package_set_with_a_lot() {
-    let package_set = PackageSetBuilder::named("gpg")
+    let package_set = PackageSetBuilder::named(Name::from_str("gpg").unwrap())
         .description("Gnu Privacy Guard")
         .env_var("gpg_home", "{{home}}/.gnupg")
         .package_actions(&[
-            PackageBuilder::named("gpg").build(),
-            PackageBuilder::named("pinentry-gnome3")
+            PackageBuilder::named(Name::from_str("gpg").unwrap()).build(),
+            PackageBuilder::named(Name::from_str("pinentry-gnome3").unwrap())
                 .for_linux_only()
                 .build(),
-            PackageBuilder::named("pinentry-mac")
+            PackageBuilder::named(Name::from_str("pinentry-mac").unwrap())
                 .for_macos_only()
                 .build(),
         ])

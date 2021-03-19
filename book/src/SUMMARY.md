@@ -11,7 +11,8 @@
   - [Package set groups](./repository/package-set-groups.md)
 
 - [The installer registry](./installers/index.md)
-
+  - [Installing installers](./installers/installing.md)
+  
 - [Script strings](./scripts/index.md)
   - [Variables](./scripts/variables.md)
   

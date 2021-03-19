@@ -53,7 +53,7 @@ impl Action for RemoveSelfAction {
 }
 
 impl RemoveSelfAction {
-    pub fn new() -> Result<Box<dyn Action>> {
+    pub fn new_action() -> Result<Box<dyn Action>> {
         Ok(Box::from(RemoveSelfAction {}))
     }
 }

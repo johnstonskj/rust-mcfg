@@ -1,7 +1,7 @@
 use crate::actions::Action;
 use crate::error::Result;
 use crate::shared::packages::{PackageRepository, PackageSet, PackageSetGroup};
-use crate::shared::FileSystemResource;
+use crate::shared::{FileSystemResource, Name};
 
 // ------------------------------------------------------------------------------------------------
 // Public Types
@@ -12,7 +12,7 @@ use crate::shared::FileSystemResource;
 ///
 #[derive(Debug)]
 pub struct ListAction {
-    group: Option<String>,
+    group: Option<Name>,
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -46,7 +46,7 @@ impl Action for ListAction {
 }
 
 impl ListAction {
-    pub fn new(group: Option<String>) -> Result<Box<dyn Action>> {
+    pub fn new_action(group: Option<Name>) -> Result<Box<dyn Action>> {
         Ok(Box::from(ListAction { group }))
     }
 }

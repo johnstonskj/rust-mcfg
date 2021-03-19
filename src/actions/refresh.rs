@@ -62,7 +62,7 @@ impl Action for RefreshAction {
 }
 
 impl RefreshAction {
-    pub fn new() -> Result<Box<dyn Action>> {
+    pub fn new_action() -> Result<Box<dyn Action>> {
         Ok(Box::from(RefreshAction {}))
     }
 }
