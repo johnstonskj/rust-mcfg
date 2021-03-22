@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github/schema/installers.json",
+  "title": "Installer Registry",
+  "description": "The Installer Registry file for mcfg",
+  "definitions": {
+    "name": {
+      "$id": "#name",
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9\\-+.@_/]+$"
+    },
+    "platform": {
+      "$id": "#platform-kind",
+      "type": "string",
+      "enum": ["linux", "macos"]
+    },
+    "kind": {
+      "$id": "#package-kind",
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": [
+            "application",
+            "default",
+            "language"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "language": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9\\-+.@_/]+$"
+            }
+          },
+          "required": [
+            "language"
+          ]
+        }
+      ]
+    }
+  },
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "$ref": "#name"
+      },
+      "platform": {
+        "$ref": "#platform-kind"
+      },
+      "kind": {
+        "$ref": "#package-kind"
+      },
+      "if_exist": {
+        "type": "string"
+      },
+      "commands": {
+        "type": "object",
+        "properties": {
+          "install": {
+            "type": "string"
+          },
+          "link-files": {
+            "type": "string"
+          },
+          "uninstall": {
+            "type": "string"
+          },
+          "update": {
+            "type": "string"
+          }
+        }
+      },
+      "update-self": {
+        "type": "string"
+      }
+    },
+    "required": ["name"]
+  }
+}

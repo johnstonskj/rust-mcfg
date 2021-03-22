@@ -22,3 +22,5 @@
   - [Adding new actions](./tool/new.md)
   
 - [Appendix: Example package sets](./appendices/package-sets.md)
+- [Appendix: Schema for YAML](./appendices/yaml-schema.md)
+- [Appendix: Schema for install log](./appendices/log-schema.md)
