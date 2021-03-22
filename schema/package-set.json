@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github/schema/package-set.json",
+  "$id": "https://raw.githubusercontent.com/johnstonskj/rust-mcfg/main/schema/package-set.json",
   "title": "Package Set",
   "description": "A Package Set for mcfg",
   "definitions": {

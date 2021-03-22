@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github/schema/installers.json",
+  "$id": "https://raw.githubusercontent.com/johnstonskj/rust-mcfg/main/schema/installers.json",
   "title": "Installer Registry",
   "description": "The Installer Registry file for mcfg",
   "definitions": {
